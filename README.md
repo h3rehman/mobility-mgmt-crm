@@ -1,2 +1,2 @@
 # mobililty-mgmt-crm
-Spring/React.js Project for Mobility Management CRM
+Spring Project for Mobility Management CRM
