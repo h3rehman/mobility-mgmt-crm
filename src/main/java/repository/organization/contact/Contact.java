@@ -25,6 +25,7 @@ public class Contact {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="ContactID")
+	@JsonView(View.OrgDetail.class)
 	Long contactId;
 	
 	@JsonView(View.OrgDetail.class)

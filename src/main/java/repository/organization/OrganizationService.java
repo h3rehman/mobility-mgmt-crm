@@ -1,14 +1,17 @@
 
 package repository.organization;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import repository.organization.contact.Contact;
 import repository.organization.contact.ContactRepository;
+import repository.organization.contact.OrganizationContact;
 import repository.organization.county.County;
 import repository.organization.county.CountyRepository;
 
@@ -23,6 +26,7 @@ public class OrganizationService {
 	
 	@Autowired
 	CountyRepository countyRepository;
+	
 	
 	public List<Organization> getAllOrganizations(){
 		return orgRepository.findAll();
@@ -66,12 +70,46 @@ public class OrganizationService {
 	
 	public void updateOrg (Organization org, String countyName) {
 		County county = countyRepository.findBycountyDesc(countyName);
-		org.setCounty(county);
-		orgRepository.save(org);
-		System.out.println("$$$$$$$$$$$$$$$$$$AFTER SAVING$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-		System.out.println("County ID: " + org.getCounty().getCountyId());
-		System.out.println("County Desc: " + org.getCounty().getCountyDesc());
-		System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+		Optional<Organization> orgOptional = orgRepository.findById(org.getOrgId());
+
+		if (orgOptional != null) {
+			Organization orgOriginal = orgOptional.get();
+			orgOriginal.setCounty(county);
+			orgOriginal.setOrgname(org.getOrgname());
+			orgOriginal.setAddress(org.getAddress());
+			orgOriginal.setCity(org.getCity());
+			orgOriginal.setEmail(org.getEmail());
+			orgOriginal.setPhone(org.getPhone());
+			orgOriginal.setZip(org.getZip());
+			orgRepository.save(orgOriginal);
+		}
+		else {
+			System.out.println("Organization Returned is Null");
+		}
+			
 	}
+
+	public void updateContact(Contact con) {
+		Optional<Contact> optionalCon = contactRepository.findById(con.getContactId());
+		
+		if (optionalCon != null) {
+			Contact originalCon = optionalCon.get();
+			originalCon.setFirstName(con.getFirstName());
+			originalCon.setLastName(con.getLastName());
+			originalCon.setTitle(con.getTitle());
+			originalCon.setPhone(con.getPhone());
+			originalCon.setEmail(con.getEmail());
+			contactRepository.save(originalCon);
+		}
+		else {
+			System.out.println("Contact Returned is Null");
+		}	
+	}
+
+	public Contact getContactById(Long id) throws ClassNotFoundException {
+		Optional<Contact> optionalContact = contactRepository.findById(id);
+		return optionalContact.orElseThrow(() -> new ClassNotFoundException("No Contact exist with the id: " + id));
+	}
+	
 
 }
