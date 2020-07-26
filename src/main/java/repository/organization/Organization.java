@@ -141,9 +141,9 @@ public class Organization {
 	public void setZip(String zip) {
 		this.zip = zip;
 	}
-//	public void setOrgContacts(Set<OrganizationContact> orgContacts) {
-//		this.orgContacts = orgContacts;
-//	}
+	public void setOrgContacts(Set<OrganizationContact> orgContacts) {
+		this.orgContacts = orgContacts;
+	}
 //	@JsonView(View.OrgDetail.class)
 //	public List<List<String>> getOrgContacts() {
 //		return getContacts();

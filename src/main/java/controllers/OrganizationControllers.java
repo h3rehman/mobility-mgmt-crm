@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -111,6 +112,11 @@ public class OrganizationControllers {
 		return orgService.getAllContact();
 	}
 	
+	@GetMapping("/contact/{id}")
+	public Contact getContact(@PathVariable Long id) throws ClassNotFoundException{
+		return orgService.getContactById(id);
+	}
+	
 	
 	@GetMapping("/org-names")
 	public List<String> getCustomerNames(){
@@ -139,7 +145,7 @@ public class OrganizationControllers {
 		
 		System.out.println("##############################");
 		System.out.println("Org ID is: " + org.getOrgId());
-	
+		System.out.println("##############################");
 		
 		orgService.addOrg(org, countyName);
  		
@@ -164,5 +170,21 @@ public class OrganizationControllers {
 		orgService.updateOrg(org, countyName);
 	}
 
-	
+	@PutMapping("/contact")
+	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
+	public void updateContact(@RequestBody Contact con) {
+		orgService.updateContact(con);
+		
+	}
+
+	@DeleteMapping("/orgContact/{orgId}/{contactId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
+	public void deleteOrgContact(@PathVariable Long orgId, @PathVariable Long contactId) {
+		String sql = "DELETE from OrganizationContact "
+				 	+ "WHERE orgid = ? "
+				 	+ "AND contactid = ?";
+		jdbcTemplate.update(sql, orgId, contactId);
+		System.out.println("########## DisAssociated Contact Id: " + contactId);
+	}
+
 }
