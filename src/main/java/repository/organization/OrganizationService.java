@@ -27,6 +27,7 @@ public class OrganizationService {
 	@Autowired
 	CountyRepository countyRepository;
 	
+	
 	public List<Organization> getAllOrganizations(){
 		return orgRepository.findAll();
 	}
@@ -87,5 +88,28 @@ public class OrganizationService {
 		}
 			
 	}
+
+	public void updateContact(Contact con) {
+		Optional<Contact> optionalCon = contactRepository.findById(con.getContactId());
+		
+		if (optionalCon != null) {
+			Contact originalCon = optionalCon.get();
+			originalCon.setFirstName(con.getFirstName());
+			originalCon.setLastName(con.getLastName());
+			originalCon.setTitle(con.getTitle());
+			originalCon.setPhone(con.getPhone());
+			originalCon.setEmail(con.getEmail());
+			contactRepository.save(originalCon);
+		}
+		else {
+			System.out.println("Contact Returned is Null");
+		}	
+	}
+
+	public Contact getContactById(Long id) throws ClassNotFoundException {
+		Optional<Contact> optionalContact = contactRepository.findById(id);
+		return optionalContact.orElseThrow(() -> new ClassNotFoundException("No Contact exist with the id: " + id));
+	}
+	
 
 }
