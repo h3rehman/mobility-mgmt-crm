@@ -1,17 +1,19 @@
 
 package repository.organization;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+
+import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import repository.organization.contact.Contact;
 import repository.organization.contact.ContactRepository;
 import repository.organization.contact.OrganizationContact;
+import repository.organization.contact.OrganizationContactRepository;
 import repository.organization.county.County;
 import repository.organization.county.CountyRepository;
 
@@ -27,7 +29,18 @@ public class OrganizationService {
 	@Autowired
 	CountyRepository countyRepository;
 	
+	@Autowired
+	OrganizationContactRepository organizationContactRepository;
 	
+	DataSource dataSource;
+	JdbcTemplate jdbcTemplate;
+	
+	@Autowired
+	OrganizationService (DataSource dataSource){
+		this.dataSource = dataSource;
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	}
+		
 	public List<Organization> getAllOrganizations(){
 		return orgRepository.findAll();
 	}
@@ -109,6 +122,30 @@ public class OrganizationService {
 	public Contact getContactById(Long id) throws ClassNotFoundException {
 		Optional<Contact> optionalContact = contactRepository.findById(id);
 		return optionalContact.orElseThrow(() -> new ClassNotFoundException("No Contact exist with the id: " + id));
+	}
+
+	public void associateContact(Contact con, String orgId) {
+		Long oId = Long.parseLong(orgId);
+		contactRepository.save(con);
+		Optional<Organization> org = orgRepository.findById(oId);
+		
+		if (org != null) {
+			Organization originalOrg = org.get();
+			OrganizationContact orgCon = new OrganizationContact();
+			orgCon.setContact(con);
+			orgCon.setOrganization(originalOrg);
+			organizationContactRepository.save(orgCon);
+			System.out.println("############## New OrganizationContact Created, ContactId " 
+			+ con.getContactId() + " Organization ID: " + originalOrg.getOrgId());
+		}
+		
+		else {
+			System.out.println("Something wrong with the Organization or I dont know what!!!");
+		}	
+//		Long contactId = con.getContactId();
+//		String sql = "INSERT into organizationcontact (orgid, contactid) "
+//			 	+ "VALUES (?, ?)";
+//		jdbcTemplate.update(sql, contactId, orgId);
 	}
 	
 
