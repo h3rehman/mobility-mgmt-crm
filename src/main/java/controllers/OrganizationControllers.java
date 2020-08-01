@@ -186,5 +186,27 @@ public class OrganizationControllers {
 		jdbcTemplate.update(sql, orgId, contactId);
 		System.out.println("########## DisAssociated Contact Id: " + contactId);
 	}
+	
+	@PostMapping("/orgContact/{orgId}") 
+	@ResponseStatus(HttpStatus.CREATED) // 201
+	public ResponseEntity<Void> createContact(@RequestBody Contact con, @PathVariable String orgId){ 
+		
+		System.out.println("##############################");
+		System.out.println("Creating contact for Org ID is: " + orgId);
+		System.out.println("##############################");
+		
+		orgService.associateContact(con, orgId);
+		
+		// Build the location URI of the new item
+		 URI location = ServletUriComponentsBuilder
+		 .fromCurrentRequestUri()
+		 .path("/{contactId}")
+		 .buildAndExpand(con.getContactId())
+		 .toUri(); 
+
+		// Explicitly create a 201 Created response
+		 return ResponseEntity.created(location).build();	
+	}
+	
 
 }
