@@ -1,5 +1,7 @@
 package repository.organization;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +25,7 @@ import org.springframework.context.annotation.Lazy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
+import repository.event.Event;
 import repository.organization.contact.Contact;
 import repository.organization.contact.OrganizationContact;
 import repository.organization.county.County;
@@ -60,11 +63,11 @@ public class Organization {
 	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name = "CountyID")
 	@JsonIgnore
-	County county; // = new County();
+	County county; 
 	
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name = "OrgID")
-	Set<EventOrganization> eventOrgs = new HashSet<EventOrganization>();
+	Set<EventOrganization> eventOrgs;
 	
 	Organization (String orgName, String email){
 		this.orgname = orgName;
@@ -86,27 +89,6 @@ public class Organization {
 		return phone;
 	}
 	
-	
-//	Returns Contact values  
-//	private List<List<String>> getContacts(){
-//		List<List<String>> contacts = new ArrayList<>();
-//		for (OrganizationContact co : orgContacts) {
-//			List<String> contact = new ArrayList<String>();
-//			contact.add(co.contact.getFirstName());
-//			contact.add(co.contact.getLastName());
-//			contact.add(co.contact.getEmail());
-//			contacts.add(contact);
-//		}
-//		return contacts;
-//	}
-	//Returns List of Contacts 
-	private List<Contact> getContactsList(){
-		List<Contact> contacts = new ArrayList<>();
-		for (OrganizationContact co : orgContacts) {
-			contacts.add(co.getContact());
-		}
-		return contacts;
-	}
 	
 //	public List<List<String>> getEventorgs(){
 //		List<List<String>> events = new ArrayList<>();
@@ -144,14 +126,14 @@ public class Organization {
 	public void setOrgContacts(Set<OrganizationContact> orgContacts) {
 		this.orgContacts = orgContacts;
 	}
-//	@JsonView(View.OrgDetail.class)
-//	public List<List<String>> getOrgContacts() {
-//		return getContacts();
-//	}
 	
 	@JsonView(View.OrgDetail.class)
 	public List<Contact> getOrgContacts() {
-		return getContactsList();
+		List<Contact> contacts = new ArrayList<>();
+		for (OrganizationContact co : orgContacts) {
+			contacts.add(co.getContact());
+		}
+		return contacts;
 	}
 	
 	public String getOrgname() {
@@ -187,9 +169,39 @@ public class Organization {
 	public void setCounty(County county) {
 		this.county = county;
 	}
-//	public Set<EventOrganization> getEventOrgs() {
-//		return eventOrgs;
-//	}
+	
+	@JsonView(View.OrgDetail.class)
+	public List<Event> getUpcomingEvents() {
+		
+		List<Event> upcomingEvents = new ArrayList<>();
+		LocalDate ld;
+		LocalDate ldn = LocalDate.now();
+		
+			for (EventOrganization evOrg : eventOrgs) {
+				ld = evOrg.getEvent().getStartDateTime().toLocalDate();
+				int x = ldn.compareTo(ld);
+				if (x <= 0) {
+					upcomingEvents.add(evOrg.getEvent());
+			}
+		}
+		return upcomingEvents;
+	}
+	
+	@JsonView(View.OrgDetail.class)
+	public List<Event> getPastEvents() {
+		List<Event> pastEvents = new ArrayList<>();
+		LocalDate ld;
+		LocalDate ldn = LocalDate.now();
+		
+			for (EventOrganization evOrg : eventOrgs) {
+				ld = evOrg.getEvent().getStartDateTime().toLocalDate();
+				int x = ldn.compareTo(ld);
+				if (x > 0) {
+				pastEvents.add(evOrg.getEvent());
+			}
+		}
+		return pastEvents;	
+	}
 //	public void setEventOrgs(Set<EventOrganization> eventOrgs) {
 //		this.eventOrgs = eventOrgs;
 //	}
