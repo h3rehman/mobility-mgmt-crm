@@ -123,6 +123,7 @@ public class OrganizationControllers {
 		return orgService.getOrgNames();
 	}
 	
+	@JsonView(View.OrgDetail.class)
 	@GetMapping("/organizations/{id}")
 	public Organization getCustomerDetail(@PathVariable Long id) throws ClassNotFoundException {
 		return orgService.getOrgById(id);
