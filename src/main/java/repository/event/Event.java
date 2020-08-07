@@ -16,10 +16,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import repository.event.audience.Eventaudiencetype;
 import repository.event.presenter.Eventpresenter;
 import repository.organization.EventOrganization;
+import repository.organization.View;
 import repository.status.EventStatus;
 
 @Entity
@@ -28,11 +30,13 @@ public class Event {
 
 	@Id
 	@Column(name = "EventID")
+	@JsonView(View.OrgDetail.class)
 	private long eventId;
 	
 	@Column(name = "eventname")
 	private String eventName;
 		
+	@JsonView(View.OrgDetail.class)
 	private String location;
 	private String address;
 	private String city;
@@ -40,14 +44,16 @@ public class Event {
 	private String zip;
 	
 	@Column(name = "startdatetime", columnDefinition = "TIMESTAMP")
+	@JsonView(View.OrgDetail.class)
 	private LocalDateTime startDateTime;
 	
 	@Column(name = "enddatetime", columnDefinition = "TIMESTAMP")
+	@JsonView(View.OrgDetail.class)
 	private LocalDateTime endDateTime;
 	
 	@Column(name = "rtastaffcount")
-	private String rtaStaffCount;
-
+	private String rtaStaffCount;	
+	
 	@Column(name = "audiencecount")
 	private String audienceCount;
 	
@@ -56,10 +62,12 @@ public class Event {
 	
 	@ManyToOne
 	@JoinColumn(name = "EventtypeID")
+	@JsonView(View.OrgDetail.class)
 	private Eventtype eventType;
 
 	@OneToMany
 	@JoinColumn(name = "EventID")
+	@JsonView(View.OrgDetail.class)
 	List<Eventpresenter> eventPresenters;
 	
 	@OneToMany(cascade=CascadeType.ALL)
