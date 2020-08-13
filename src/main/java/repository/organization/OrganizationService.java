@@ -71,10 +71,6 @@ public class OrganizationService {
 		County county = countyRepository.findBycountyDesc(countyName);
 		org.setCounty(county);
 		orgRepository.save(org);
-		System.out.println("$$$$$$$$$$$$$$$$$$AFTER SAVING$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-		System.out.println("County ID: " + org.getCounty().getCountyId());
-		System.out.println("County Desc: " + org.getCounty().getCountyDesc());
-		System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 	}
 	
 	public List<Organization> filterOrganizations(String county, String orgName){

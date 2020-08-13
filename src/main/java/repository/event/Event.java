@@ -9,6 +9,8 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -16,6 +18,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import repository.event.audience.Eventaudiencetype;
@@ -29,9 +33,10 @@ import repository.status.EventStatus;
 public class Event {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "EventID")
 	@JsonView(View.OrgDetail.class)
-	private long eventId;
+	private Long eventId;
 	
 	@Column(name = "eventname")
 	private String eventName;
@@ -60,15 +65,15 @@ public class Event {
 	@Column(name = "surveycomplete")
 	private int surveyComplete;
 	
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name = "EventtypeID")
-	@JsonView(View.OrgDetail.class)
-	private Eventtype eventType;
+	@JsonIgnore
+	Eventtype eventType;
 
 	@OneToMany
 	@JoinColumn(name = "EventID")
 	@JsonView(View.OrgDetail.class)
-	List<Eventpresenter> eventPresenters;
+	Set<Eventpresenter> eventPresenters;
 	
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name = "EventID")
@@ -77,6 +82,8 @@ public class Event {
 	
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name = "EventID")
+	@JsonIgnore
+//	@JsonManagedReference
 	Set<EventOrganization> eventOrganizations;
 	
 	@OneToMany(cascade=CascadeType.ALL)
@@ -157,8 +164,15 @@ public class Event {
 	public void setSurveyComplete(int surveyComplete) {
 		this.surveyComplete = surveyComplete;
 	}
-
-	public String getEventType() {
+	
+	
+	public Eventtype getEventType() {
+		return eventType;
+	}
+	
+	@JsonView(View.OrgDetail.class)
+	@JsonInclude(Include.NON_NULL)
+	public String getEventTypeDesc() {
 		return eventType.getEventTypeDesc();
 	}
 
@@ -170,7 +184,7 @@ public class Event {
 		return presenters;
 	}
 
-	public long getEventId() {
+	public Long getEventId() {
 		return eventId;
 	}
 
@@ -190,7 +204,7 @@ public class Event {
 		this.endDateTime = endDateTime;
 	}
 
-	public void setEventId(long eventId) {
+	public void setEventId(Long eventId) {
 		this.eventId = eventId;
 	}
 
@@ -198,7 +212,7 @@ public class Event {
 		this.eventType = eventType;
 	}
 
-	public void setEventPresenters(List<Eventpresenter> eventPresenters) {
+	public void setEventPresenters(Set<Eventpresenter> eventPresenters) {
 		this.eventPresenters = eventPresenters;
 	}
 
@@ -215,5 +229,17 @@ public class Event {
 		this.eventaudienceTypes = eventaudienceTypes;
 	}
 	
+//	@JsonView(View.OrgDetail.class)
+	public List<String> getOrgNames(){
+		List<String> orgs = new ArrayList<>();
+		for (EventOrganization eveOrg: eventOrganizations) {
+			orgs.add(eveOrg.getOrganization().getOrgname());
+		}
+		return orgs;
+	}
 	
+	public void setOrgNames(Set<EventOrganization> eveOrgs) {
+		this.eventOrganizations = eveOrgs;
+	}
+
 }
