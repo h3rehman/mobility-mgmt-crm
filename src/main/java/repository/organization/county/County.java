@@ -17,7 +17,7 @@ public class County {
 	
 	@Id
 	@Column(name = "CountyID")
-	private long countyId;
+	private Long countyId;
 	
 	@Column(name = "countydesc")
 	private String countyDesc;
@@ -25,11 +25,11 @@ public class County {
 	@OneToMany(mappedBy = "county")
 	private Set<Organization> organizations = new HashSet<Organization>();
 
-	public long getCountyId() {
+	public Long getCountyId() {
 		return countyId;
 	}
 
-	public void setCountyId(long countyId) {
+	public void setCountyId(Long countyId) {
 		this.countyId = countyId;
 	}
 
