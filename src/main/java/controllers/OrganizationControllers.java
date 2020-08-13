@@ -144,10 +144,6 @@ public class OrganizationControllers {
 	@ResponseStatus(HttpStatus.CREATED) // 201
 	public ResponseEntity<Void> createOrg(@RequestBody Organization org, @PathVariable String countyName){ 
 		
-		System.out.println("##############################");
-		System.out.println("Org ID is: " + org.getOrgId());
-		System.out.println("##############################");
-		
 		orgService.addOrg(org, countyName);
  		
 		// Build the location URI of the new item
@@ -165,9 +161,6 @@ public class OrganizationControllers {
 	@PutMapping("/organization/{countyName}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
 	public void updateOrg(@RequestBody Organization org, @PathVariable String countyName) {
-		System.out.println("##############################");
-		System.out.println("Org ID is: " + org.getOrgId());
-		System.out.println("##############################");
 		orgService.updateOrg(org, countyName);
 	}
 

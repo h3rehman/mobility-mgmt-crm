@@ -1,7 +1,7 @@
 package repository.event;
 
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,25 +9,29 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 @Entity
 @Table(name = "Eventtype")
+@JsonInclude(Include.NON_NULL)
 public class Eventtype {
 	
 	@Id
 	@Column(name = "EventtypeID")
-	long eventTypeId;
+	Long eventTypeId;
 	
 	@Column(name = "eventtypedesc")
 	String eventTypeDesc;
 	
 	@OneToMany(mappedBy = "eventType")
-	private List<Event> events = new ArrayList<Event>();
+	private Set<Event> events;
 
-	public long getEventTypeId() {
+	public Long getEventTypeId() {
 		return eventTypeId;
 	}
 
-	public void setEventTypeId(long eventTypeId) {
+	public void setEventTypeId(Long eventTypeId) {
 		this.eventTypeId = eventTypeId;
 	}
 
@@ -37,6 +41,14 @@ public class Eventtype {
 
 	public void setEventTypeDesc(String eventTypeDesc) {
 		this.eventTypeDesc = eventTypeDesc;
+	}
+
+	public void setEvents(Set<Event> events) {
+		this.events = events;
+	}
+
+	public Set<Event> getEvents() {
+		return events;
 	}
 
 }
