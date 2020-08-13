@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.springframework.context.annotation.Lazy;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
@@ -67,6 +68,7 @@ public class Organization {
 	
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name = "OrgID")
+	@JsonIgnore
 	Set<EventOrganization> eventOrgs;
 	
 	Organization (String orgName, String email){
@@ -88,20 +90,7 @@ public class Organization {
 	public String getPhone() {
 		return phone;
 	}
-	
-	
-//	public List<List<String>> getEventorgs(){
-//		List<List<String>> events = new ArrayList<>();
-//		for (EventOrganization eo : eventOrgs) {
-//			List<String> event = new ArrayList<String>();
-//			event.add(eo.event.getEventName());
-//			event.add(eo.event.getEventType());
-//			event.add(eo.event.getLocation());
-//			events.add(event);
-//		}
-//		return events;
-//	}
-	
+		
 	public void setOrgname(String orgname) {
 		this.orgname = orgname;
 	}
@@ -155,13 +144,7 @@ public class Organization {
 	public String getCountyName() {
 		return county.getCountyDesc();
 	}
-	
-//	public void setCountyName(String countyName) {
-//		this.county.setCountyDesc(countyName);
-//	}
-
-//	Get infinite recursion for the below if @JsonIgnore is not set in County above:
-	
+		
 	public County getCounty() {
 		return county;
 	}
@@ -171,40 +154,37 @@ public class Organization {
 	}
 	
 	@JsonView(View.OrgDetail.class)
-	public List<Event> getUpcomingEvents() {
+	public List<Event> getEventOrgs() {
 		
-		List<Event> upcomingEvents = new ArrayList<>();
-		LocalDate ld;
-		LocalDate ldn = LocalDate.now();
-		
-			for (EventOrganization evOrg : eventOrgs) {
-				ld = evOrg.getEvent().getStartDateTime().toLocalDate();
-				int x = ldn.compareTo(ld);
-				if (x <= 0) {
-					upcomingEvents.add(evOrg.getEvent());
-			}
+		List<Event> events = new ArrayList<>();
+
+		for (EventOrganization evOrg : eventOrgs) {
+			events.add(evOrg.getEvent());
 		}
-		return upcomingEvents;
+		return events;
 	}
 	
-	@JsonView(View.OrgDetail.class)
-	public List<Event> getPastEvents() {
-		List<Event> pastEvents = new ArrayList<>();
-		LocalDate ld;
-		LocalDate ldn = LocalDate.now();
-		
-			for (EventOrganization evOrg : eventOrgs) {
-				ld = evOrg.getEvent().getStartDateTime().toLocalDate();
-				int x = ldn.compareTo(ld);
-				if (x > 0) {
-				pastEvents.add(evOrg.getEvent());
-			}
-		}
-		return pastEvents;	
-	}
-//	public void setEventOrgs(Set<EventOrganization> eventOrgs) {
-//		this.eventOrgs = eventOrgs;
+//	@JsonView(View.OrgDetail.class)
+//	@JsonBackReference
+//	public List<Event> getPastEvents() {
+//		List<Event> pastEvents = new ArrayList<>();
+//		LocalDate ld;
+//		LocalDate ldn = LocalDate.now();
+//		
+//			for (EventOrganization evOrg : eventOrgs) {
+//				ld = evOrg.getEvent().getStartDateTime().toLocalDate();
+//				int x = ldn.compareTo(ld);
+//				if (x > 0) {
+//				pastEvents.add(evOrg.getEvent());
+//			}
+//		}
+//		return pastEvents;	
 //	}
+	
+	@JsonIgnore
+	public void setEventOrgs(Set<EventOrganization> eventOrgs) {
+		this.eventOrgs = eventOrgs;
+	}
 	public void setOrgId(Long orgId) {
 		this.orgId = orgId;
 	}
