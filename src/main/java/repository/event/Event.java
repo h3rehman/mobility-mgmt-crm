@@ -2,6 +2,7 @@ package repository.event;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,7 +84,6 @@ public class Event {
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name = "EventID")
 	@JsonIgnore
-//	@JsonManagedReference
 	Set<EventOrganization> eventOrganizations;
 	
 	@OneToMany(cascade=CascadeType.ALL)
@@ -230,13 +230,22 @@ public class Event {
 	}
 	
 //	@JsonView(View.OrgDetail.class)
-	public List<String> getOrgNames(){
-		List<String> orgs = new ArrayList<>();
+//	public List<String> getOrgNames(){
+//		List<String> orgs = new ArrayList<>();
+//		for (EventOrganization eveOrg: eventOrganizations) {
+//			orgs.add(eveOrg.getOrganization().getOrgname());
+//		}
+//		return orgs;
+//	}
+	
+	public HashMap<Long, String> getOrgNames(){
+		HashMap<Long, String> orgs = new HashMap<>();
 		for (EventOrganization eveOrg: eventOrganizations) {
-			orgs.add(eveOrg.getOrganization().getOrgname());
+			orgs.put(eveOrg.getOrganization().getOrgId(), eveOrg.getOrganization().getOrgname());
 		}
 		return orgs;
 	}
+
 	
 	public void setOrgNames(Set<EventOrganization> eveOrgs) {
 		this.eventOrganizations = eveOrgs;
