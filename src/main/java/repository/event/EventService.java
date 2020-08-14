@@ -65,5 +65,30 @@ public class EventService {
 		eventRepository.save(eve);
 		System.out.println("### New Event created with ID: " + eve.getEventId());
 	}
+
+	public void updateEvent(Event eve, String eventTypeDesc) {
+		Eventtype eventType = eventtypeRepository.findByeventTypeDesc(eventTypeDesc);
+		Optional<Event> optionalEvent = eventRepository.findById(eve.getEventId());
+		
+		if (optionalEvent != null) {
+			Event eveOriginal = optionalEvent.get();
+			eveOriginal.setEventType(eventType);
+			eveOriginal.setAddress(eve.getAddress());
+			eveOriginal.setAudienceCount(eve.getAudienceCount());
+			eveOriginal.setCity(eve.getCity());
+			eveOriginal.setStartDateTime(eve.getStartDateTime());
+			eveOriginal.setEndDateTime(eve.getEndDateTime());
+			eveOriginal.setEventName(eve.getEventName());
+			eveOriginal.setLocation(eve.getLocation());
+			eveOriginal.setRtaStaffCount(eve.getRtaStaffCount());
+			eveOriginal.setState(eve.getState());
+			eveOriginal.setZip(eve.getZip());
+			eventRepository.save(eveOriginal);
+		}
+		else {
+			System.out.println("Event is null");
+		}
+		
+	}
 	
 }
