@@ -35,9 +35,11 @@ public class Contact {
 	@JsonView(View.OrgDetail.class)
 	@Column(name="lastname")
 	String lastName;
+	@JsonView(View.OrgDetail.class)
 	String title;
 	@JsonView(View.OrgDetail.class)
 	String email;
+	@JsonView(View.OrgDetail.class)
 	String phone;
 
 	@OneToMany(cascade=CascadeType.ALL)
