@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,12 +19,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.fasterxml.jackson.annotation.JsonView;
-
 import repository.event.Event;
 import repository.event.EventService;
 import repository.organization.Organization;
-import repository.organization.View;
+
 
 @RestController
 @RequestMapping("/api")
@@ -59,7 +58,7 @@ public class EventControllers {
 	}
 	
 	@PostMapping("/event/{eventType}")
-	@ResponseStatus(HttpStatus.CREATED)
+	@ResponseStatus(HttpStatus.CREATED) //201
 	public ResponseEntity<Void> createEvent(@RequestBody Event eve, @PathVariable String eventType){ 
 				
 		eventService.addEvent(eve, eventType);
@@ -73,6 +72,12 @@ public class EventControllers {
 
 		// Explicitly create a 201 Created response
 		 return ResponseEntity.created(location).build();	
+	}
+	
+	@PutMapping("/event/{eventType}")
+	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
+	public void updateOrg(@RequestBody Event eve, @PathVariable String eventType) {
+		eventService.updateEvent(eve, eventType);
 	}
 	
 }

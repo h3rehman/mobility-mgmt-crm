@@ -163,24 +163,7 @@ public class Organization {
 		}
 		return events;
 	}
-	
-//	@JsonView(View.OrgDetail.class)
-//	@JsonBackReference
-//	public List<Event> getPastEvents() {
-//		List<Event> pastEvents = new ArrayList<>();
-//		LocalDate ld;
-//		LocalDate ldn = LocalDate.now();
-//		
-//			for (EventOrganization evOrg : eventOrgs) {
-//				ld = evOrg.getEvent().getStartDateTime().toLocalDate();
-//				int x = ldn.compareTo(ld);
-//				if (x > 0) {
-//				pastEvents.add(evOrg.getEvent());
-//			}
-//		}
-//		return pastEvents;	
-//	}
-	
+		
 	@JsonIgnore
 	public void setEventOrgs(Set<EventOrganization> eventOrgs) {
 		this.eventOrgs = eventOrgs;
