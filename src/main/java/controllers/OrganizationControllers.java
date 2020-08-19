@@ -185,10 +185,6 @@ public class OrganizationControllers {
 	@ResponseStatus(HttpStatus.CREATED) // 201
 	public ResponseEntity<Void> createContact(@RequestBody Contact con, @PathVariable String orgId){ 
 		
-		System.out.println("##############################");
-		System.out.println("Creating contact for Org ID is: " + orgId);
-		System.out.println("##############################");
-		
 		orgService.associateContact(con, orgId);
 		
 		// Build the location URI of the new item
@@ -201,6 +197,14 @@ public class OrganizationControllers {
 		// Explicitly create a 201 Created response
 		 return ResponseEntity.created(location).build();	
 	}
+	
+	@GetMapping("/allorgnames")
+	public List<Map<String, Object>> getAllOrgNames() throws SQLException {
+		String sql = "SELECT OrgID, orgname "
+					+ "FROM Organization ";
+				
+		return jdbcTemplate.queryForList(sql);
+	} 
 	
 
 }

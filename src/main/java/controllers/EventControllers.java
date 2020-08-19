@@ -57,11 +57,11 @@ public class EventControllers {
 		return eventService.myUpcomingAppointments(presenterId);
 	}
 	
-	@PostMapping("/event/{eventType}")
+	@PostMapping("/event/{eventType}/{orgId}")
 	@ResponseStatus(HttpStatus.CREATED) //201
-	public ResponseEntity<Void> createEvent(@RequestBody Event eve, @PathVariable String eventType){ 
+	public ResponseEntity<Void> createEvent(@RequestBody Event eve, @PathVariable String eventType, @PathVariable String orgId){ 
 				
-		eventService.addEvent(eve, eventType);
+		eventService.addEvent(eve, eventType, orgId);
  		
 		// Build the location URI of the new item
 		 URI location = ServletUriComponentsBuilder
@@ -74,10 +74,10 @@ public class EventControllers {
 		 return ResponseEntity.created(location).build();	
 	}
 	
-	@PutMapping("/event/{eventType}")
+	@PutMapping("/event/{eventType}/{orgId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
-	public void updateOrg(@RequestBody Event eve, @PathVariable String eventType) {
-		eventService.updateEvent(eve, eventType);
+	public void updateEvent(@RequestBody Event eve, @PathVariable String eventType, @PathVariable String orgId) {
+		eventService.updateEvent(eve, eventType, orgId);
 	}
 	
 }
