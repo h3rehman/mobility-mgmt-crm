@@ -20,6 +20,7 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 
@@ -229,15 +230,7 @@ public class Event {
 		this.eventaudienceTypes = eventaudienceTypes;
 	}
 	
-//	@JsonView(View.OrgDetail.class)
-//	public List<String> getOrgNames(){
-//		List<String> orgs = new ArrayList<>();
-//		for (EventOrganization eveOrg: eventOrganizations) {
-//			orgs.add(eveOrg.getOrganization().getOrgname());
-//		}
-//		return orgs;
-//	}
-	
+	@JsonProperty
 	public HashMap<Long, String> getOrgNames(){
 		HashMap<Long, String> orgs = new HashMap<>();
 		for (EventOrganization eveOrg: eventOrganizations) {
@@ -245,9 +238,9 @@ public class Event {
 		}
 		return orgs;
 	}
-
 	
-	public void setOrgNames(Set<EventOrganization> eveOrgs) {
+	@JsonIgnore
+	private void setOrgNames(Set<EventOrganization> eveOrgs) {
 		this.eventOrganizations = eveOrgs;
 	}
 
