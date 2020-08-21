@@ -204,7 +204,17 @@ public class OrganizationControllers {
 					+ "FROM Organization ";
 				
 		return jdbcTemplate.queryForList(sql);
-	} 
+	}
+	
+	@DeleteMapping("/removeOrg/{eventId}/{orgId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
+	public void deleteEventOrg(@PathVariable Long eventId, @PathVariable Long orgId) {
+		String sql = "DELETE from eventorganization "
+				 	+ "WHERE eventId = ? "
+				 	+ "AND OrgID = ?";
+		jdbcTemplate.update(sql, eventId, orgId);
+		System.out.println("########## DisAssociated Org Id: " + orgId);
+	}
 	
 
 }
