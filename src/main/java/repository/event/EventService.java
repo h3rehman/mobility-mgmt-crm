@@ -3,7 +3,10 @@ package repository.event;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,11 +116,14 @@ public class EventService {
 			if (oId > 0) {
 				Optional<Organization> optionalOrg = orgRepository.findById(oId);
 				if(optionalOrg != null) {
-					Organization org = optionalOrg.get();
-					EventOrganization eveOrg = new EventOrganization();
-					eveOrg.setEvent(eveOriginal);
-					eveOrg.setOrganization(org);
-					eventOrgRepository.save(eveOrg);					
+					HashMap<Long, String> associatedOrgs = eveOriginal.getOrgNames();
+					if (!associatedOrgs.containsKey(oId)) {  //only add if the Organization does not exist. 
+						Organization org = optionalOrg.get();
+						EventOrganization eveOrg = new EventOrganization();
+						eveOrg.setEvent(eveOriginal);
+						eveOrg.setOrganization(org);
+						eventOrgRepository.save(eveOrg);					
+					}
 				}
 			}
 		}
