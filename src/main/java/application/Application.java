@@ -9,10 +9,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import config.AppConfig;
+import config.SecurityConfig;
 
 @SpringBootApplication
 //@EnableTransactionManagement
-@Import(AppConfig.class)
+@Import({AppConfig.class, SecurityConfig.class})
 @EnableJpaRepositories("repository")
 @EntityScan("repository")
 public class Application {

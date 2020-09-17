@@ -1,5 +1,6 @@
 package config;
 
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +11,15 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.security.providers.ExpiringUsernameAuthenticationToken;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import repository.event.presenter.Presenter;
+import user.User;
 
 
 
@@ -22,7 +30,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  *
  */
 @Configuration
-@ComponentScan({"controllers", "repository"})
+@ComponentScan({"controllers", "repository", "services"})
+@Controller
+//@RequestMapping("/")
 public class AppConfig implements WebMvcConfigurer {
 	
 	/**
@@ -33,11 +43,19 @@ public class AppConfig implements WebMvcConfigurer {
 	 *            of URLs to static views (since there is no dynamic content a
 	 *            Spring Controller is not required).
 	 */
-	@Override
-	public void addViewControllers(ViewControllerRegistry registry) {
-		// Map the root URL to the index template
-		registry.addViewController("/").setViewName("index");
-	}
+//	@Override
+//	public void addViewControllers(ViewControllerRegistry registry) {
+//		// Map the root URL to the index template
+//		registry.addViewController("/").setViewName("index");
+//	}
+	
+//		@GetMapping
+//	  public void addViewControllers(ExpiringUsernameAuthenticationToken userToken, ViewControllerRegistry registry) {
+//	    User user = (User) userToken.getPrincipal();
+//	    System.out.println("###### First Name: " + user.getFirstName() + "##########");
+//	    System.out.println("###### Email: " + user.getEmail() + "##########");
+//	    registry.addViewController("/").setViewName("index");
+//	  }
 
 	@Autowired
 	DataSource dataSource;

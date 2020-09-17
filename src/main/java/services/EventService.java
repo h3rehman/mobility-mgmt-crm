@@ -1,4 +1,4 @@
-package repository.event;
+package services;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +12,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import repository.event.Event;
+import repository.event.EventRepository;
+import repository.event.Eventtype;
+import repository.event.EventtypeRepository;
 import repository.event.presenter.Eventpresenter;
 import repository.event.presenter.Presenter;
 import repository.event.presenter.PresenterRepository;

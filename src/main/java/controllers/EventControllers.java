@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import repository.event.Event;
-import repository.event.EventService;
 import repository.organization.Organization;
+import services.EventService;
 
 
 @RestController

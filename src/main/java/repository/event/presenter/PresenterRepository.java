@@ -5,5 +5,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PresenterRepository extends JpaRepository<Presenter, Long>{
-
+	
+	public Presenter findByusername(String username);
 }

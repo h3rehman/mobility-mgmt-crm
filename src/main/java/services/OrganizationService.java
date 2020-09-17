@@ -1,5 +1,5 @@
 
-package repository.organization;
+package services;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import repository.organization.Organization;
+import repository.organization.OrganizationRepository;
 import repository.organization.contact.Contact;
 import repository.organization.contact.ContactRepository;
 import repository.organization.contact.OrganizationContact;
