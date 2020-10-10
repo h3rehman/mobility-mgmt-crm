@@ -23,8 +23,10 @@ public class SAMLUserService implements SAMLUserDetailsService {
 		final String upn = credential.getAttributeAsString("upn");  
 		final String nameId = credential.getNameID().getValue();
 		
-		String nameIdSplits [] = nameId.split("@");
-		final String username = nameIdSplits[0];
+//		String nameIdSplits [] = nameId.split("@");
+//		final String username = nameIdSplits[0];
+		
+		final String username = credential.getAttributeAsString("username");
 		
 		System.out.println("### User Attribute First Name: " + firstName);
 		System.out.println("### User Attribute Last Name: " + lastName);

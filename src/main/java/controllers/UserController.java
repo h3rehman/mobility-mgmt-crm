@@ -29,6 +29,9 @@ public class UserController {
 	@Value("${onelogin.sp.logoutUrl}")
     private String logoutUrl;
 	
+	@Value("${onelogin.sp.port}")
+	private String port;
+	
 	@GetMapping("/user")
 	public ResponseEntity<?> getUser(@AuthenticationPrincipal Presenter user) {
         if (user == null) {
@@ -42,6 +45,7 @@ public class UserController {
 	 public ResponseEntity<?> logout(HttpServletRequest request) {
 	        // send logout URL to client so they can initiate logout
 	        Map<String, String> logoutDetails = new HashMap<>();
+	        logoutDetails.put("port", port);
 	        logoutDetails.put("logoutUrl", logoutUrl);
 	        request.getSession(false).invalidate();
 	        return ResponseEntity.ok().body(logoutDetails);

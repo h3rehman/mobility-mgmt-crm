@@ -15,7 +15,7 @@ public class Presenter {
 
 	@Id
 	@Column(name = "PresenterID")
-	private long presenterId;
+	private Long presenterId;
 	
 	private String name;
 	
@@ -42,7 +42,7 @@ public class Presenter {
 		this.isActive = true;
 	}
 
-	public long getPresenterId() {
+	public Long getPresenterId() {
 		return presenterId;
 	}
 
@@ -84,6 +84,10 @@ public class Presenter {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public void setPresenterId(Long presenterId) {
+		this.presenterId = presenterId;
 	}
 	
 	

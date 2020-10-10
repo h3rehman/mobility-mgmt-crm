@@ -11,24 +11,26 @@ public class EventPresenterKey implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	@Column(name = "EventID")
-	private long eventId;
+	private Long eventId;
 	
 	@Column(name = "PresenterID")
-	private long presenterId;
+	private Long presenterId;
+	
+	public EventPresenterKey() {}
 
-	public long getEventId() {
+	public Long getEventId() {
 		return eventId;
 	}
 
-	public void setEventId(long eventId) {
+	public void setEventId(Long eventId) {
 		this.eventId = eventId;
 	}
 
-	public long getPresenterId() {
+	public Long getPresenterId() {
 		return presenterId;
 	}
 
-	public void setPresenterId(long presenterId) {
+	public void setPresenterId(Long presenterId) {
 		this.presenterId = presenterId;
 	}
 
