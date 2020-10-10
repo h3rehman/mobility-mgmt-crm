@@ -27,9 +27,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-import repository.organization.OrganizationService;
 import repository.organization.View;
 import repository.organization.contact.Contact;
+import services.OrganizationService;
 import repository.organization.Organization;
 
 
