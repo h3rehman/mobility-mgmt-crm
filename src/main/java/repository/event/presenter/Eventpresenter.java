@@ -14,7 +14,7 @@ import repository.event.Event;
 public class Eventpresenter {
 
 	@EmbeddedId
-	EventPresenterKey id;
+	EventPresenterKey id = new EventPresenterKey();
 	
 	@ManyToOne
 	@MapsId("eventId")
@@ -26,8 +26,30 @@ public class Eventpresenter {
 	@JoinColumn(name = "PresenterID")
 	public Presenter presenter;
 
+	public Eventpresenter(){}
+	
 	public EventPresenterKey getId() {
 		return id;
+	}
+
+	public Event getEvent() {
+		return event;
+	}
+
+	public void setEvent(Event event) {
+		this.event = event;
+	}
+
+	public Presenter getPresenter() {
+		return presenter;
+	}
+
+	public void setPresenter(Presenter presenter) {
+		this.presenter = presenter;
+	}
+
+	public void setId(EventPresenterKey id) {
+		this.id = id;
 	}
 		
 }

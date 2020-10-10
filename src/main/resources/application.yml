@@ -1,0 +1,44 @@
+#JDBC Config
+db.driver: com.microsoft.sqlserver.jdbc.SQLServerDriver
+db.password: "GreatLakes#5"
+db.url: "jdbc:sqlserver://172.16.0.141;databaseName=Mobility"
+db.user: sa
+
+#Debug Mode
+debug: false
+
+#Server Port
+server.port: 9000
+
+#JPA Config
+spring.datasource.driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+spring.datasource.password: "GreatLakes#5"
+spring.datasource.url: "jdbc:sqlserver://172.16.0.141;databaseName=Mobility"
+spring.datasource.username: sa
+spring.jpa.hibernate.ddl-auto: none
+spring.jpa.properties.hibernate.format_sql: true
+spring.jpa.show-sql: true
+
+#Mustache Templates
+#spring.mustache.prefix: "classpath:/templates/"
+#spring.mustache.suffix: .html
+
+#SAML Config
+onelogin:
+  metadata-path: "classpath:onelogin/onelogin_metadata_1267202.xml"
+  sp:
+    protocol: http
+    host: "localhost:9000"
+    port: ":9000"
+    path: /
+    logoutUrl: "/saml/logout"
+    loginUrl: "/login"
+    key-store:
+      file: "classpath:onelogin/keystore.jks"
+      alias: onelogin
+      password: secret
+
+spring:
+  profiles:
+    active: @spring.profiles.active@
+  security:

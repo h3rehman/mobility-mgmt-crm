@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import repository.event.audience.Eventaudiencetype;
 import repository.event.presenter.Eventpresenter;
+import repository.event.presenter.Presenter;
 import repository.organization.EventOrganization;
 import repository.organization.View;
 import repository.status.EventStatus;
@@ -177,13 +178,28 @@ public class Event {
 		return eventType.getEventTypeDesc();
 	}
 
+
 	public List<String> getEventPresenters() {
 		List<String> presenters = new ArrayList<String>();
 		for (Eventpresenter eventPresenter : eventPresenters) {
-			presenters.add(eventPresenter.presenter.getName());
+			String fullName = eventPresenter.presenter.getName() + " " + eventPresenter.presenter.getLastName();
+			presenters.add(fullName);
 		}
 		return presenters;
 	}
+	
+	
+//	public HashMap<Long, String[]> getEventPresenters() {
+//		HashMap<Long, String[]> presenters = new HashMap<>();
+//		for (Eventpresenter eventPresenter : eventPresenters) {
+//			String[] firstNLastNames = new String[2];
+//			firstNLastNames[0] = eventPresenter.presenter.getName();
+//			firstNLastNames[1] = eventPresenter.presenter.getLastName();
+//			presenters.put(eventPresenter.presenter.getPresenterId(), firstNLastNames);
+//		}
+//		return presenters;
+//	}
+
 
 	public Long getEventId() {
 		return eventId;
