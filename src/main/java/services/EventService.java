@@ -16,6 +16,7 @@ import repository.event.Event;
 import repository.event.EventRepository;
 import repository.event.Eventtype;
 import repository.event.EventtypeRepository;
+import repository.event.presenter.EventPresenterRepository;
 import repository.event.presenter.Eventpresenter;
 import repository.event.presenter.Presenter;
 import repository.event.presenter.PresenterRepository;
@@ -42,6 +43,9 @@ public class EventService {
 	@Autowired
 	EventOrganizationRepository eventOrgRepository;
 	
+	@Autowired
+	EventPresenterRepository eventPresenterRepository;
+	
 	public List<Event> getAllEvents(){
 		return eventRepository.findAll();
 	}
@@ -52,9 +56,9 @@ public class EventService {
 		return eventRepository.findByDate(dateTime);
 	}
 	
-	public List<Event> myUpcomingAppointments(int id) throws ClassNotFoundException{
+	public List<Event> myUpcomingAppointments(Long long1) throws ClassNotFoundException{
 		
-		Presenter presenter = presenterById(id);
+		Presenter presenter = presenterById(long1);
 		
 		List<Event> myEvents = new ArrayList<>();
 		for (Eventpresenter ep : presenter.eventPresenters) {
@@ -63,9 +67,9 @@ public class EventService {
 		return myEvents;
 	}
 	
-	public Presenter presenterById(int id) throws ClassNotFoundException {
-		Optional<Presenter> optionalPresenter = presenterRepository.findById((long) id);
-		return optionalPresenter.orElseThrow(() -> new ClassNotFoundException("There is no Organization exist with the id: " + id));
+	public Presenter presenterById(Long long1) throws ClassNotFoundException {
+		Optional<Presenter> optionalPresenter = presenterRepository.findById(long1);
+		return optionalPresenter.orElseThrow(() -> new ClassNotFoundException("There is no Presenter exist with the id: " + long1));
 	}
 
 	public Event getEventById(Long id) throws ClassNotFoundException {
@@ -73,7 +77,7 @@ public class EventService {
 		return optEvent.orElseThrow(() -> new ClassNotFoundException("There is no Event with the id: " + id));
 	}
 
-	public void addEvent(Event eve, String eventTypeDesc, String orgId) {
+	public void addEvent(Event eve, String eventTypeDesc, String orgId, Long presenterId, boolean joinEve) {
 		Eventtype eventType = eventtypeRepository.findByeventTypeDesc(eventTypeDesc);
 		System.out.println("###################################");
 		System.out.println("Event Desc is: " + eventType.getEventTypeDesc());
@@ -94,6 +98,12 @@ public class EventService {
 				System.out.println("##### NEW EVENT CREATED, Event ID: " + eve.getEventId() + " " + "associated Org Id: " + org.getOrgId());
 			}
 		}
+		
+		//Join the event
+		if (joinEve != false && presenterId != null) {
+			joinEvent(eve.getEventId(), presenterId);
+		}
+		
 		System.out.println("### New Event created with ID: " + eve.getEventId());
 	}
 
@@ -135,6 +145,24 @@ public class EventService {
 			System.out.println("Event is null");
 		}
 		
+	}
+
+	public void joinEvent(Long eventId, Long presenterId) {
+		Optional<Event> optionalEvent = eventRepository.findById(eventId);
+		Optional<Presenter> optionalPresenter = presenterRepository.findById(presenterId);
+		
+		if (optionalEvent != null && optionalPresenter != null) {
+			Event event = optionalEvent.get();
+			Presenter presenter = optionalPresenter.get();
+			Eventpresenter evePresenter = new Eventpresenter();
+			evePresenter.setEvent(event);
+			evePresenter.setPresenter(presenter);
+			eventPresenterRepository.save(evePresenter);
+		}
+		
+		else {
+			System.out.println("Either Event or Presenter is null...");
+		}		
 	}
 	
 }

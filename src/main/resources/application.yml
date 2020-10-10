@@ -25,10 +25,11 @@ spring.jpa.show-sql: true
 
 #SAML Config
 onelogin:
-  metadata-path: "classpath:onelogin/onelogin_metadata_1262410.xml"
+  metadata-path: "classpath:onelogin/onelogin_metadata_1267202.xml"
   sp:
     protocol: http
     host: "localhost:9000"
+    port: ":9000"
     path: /
     logoutUrl: "/saml/logout"
     loginUrl: "/login"
@@ -36,3 +37,8 @@ onelogin:
       file: "classpath:onelogin/keystore.jks"
       alias: onelogin
       password: secret
+
+spring:
+  profiles:
+    active: @spring.profiles.active@
+  security:
