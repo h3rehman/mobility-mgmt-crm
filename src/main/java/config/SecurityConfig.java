@@ -5,6 +5,22 @@ import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.security.extensions.saml2.config.SAMLConfigurer.saml;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.jar.JarFile;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,10 +30,15 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.saml.websso.WebSSOProfileConsumerImpl;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SimpleSavedRequest;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
 
 import services.SAMLUserService;
 
@@ -51,6 +72,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
 	  @Value("${onelogin.sp.protocol}")
 	  private String protocol;
+	  
+	  final int responseSkew = 28800; //8 hours skew: past+future
 
 	  @Autowired
 	  SAMLUserService samlUserService;
@@ -65,7 +88,59 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	//Security Policy
 	 @Override
 	 protected void configure(HttpSecurity http) throws Exception {
+		 		   
+		 WebSSOProfileConsumerImpl consumerImpl = new WebSSOProfileConsumerImpl();
+		 consumerImpl.setResponseSkew(this.responseSkew);
+
+//		 final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+//		  
+//		  final URL resource = this.getClass().getClassLoader().getResource(metadataPath);
+//		  if (resource.getProtocol().equalsIgnoreCase("jar")) //Will NOT work in an IDE, only package and JARs
+//		  {   
+//			  System.out.println("################# Type: JAR");
+//			  File file = null;
+//			  String metadata = "";
+//			  ClassPathResource res = new ClassPathResource(metadataPath);
+//			  try {
+//			      byte[] dataArr = FileCopyUtils.copyToByteArray(res.getInputStream());
+//			      metadata = new String(dataArr, StandardCharsets.UTF_8);
+//			      file = File.createTempFile("metafile", ".xml");
+//			      BufferedWriter out = new BufferedWriter( 
+//                          new FileWriter(file.getName())); 
+//	            out.write(metadata); 
+//	            out.close();
+//           
+//			  } catch (IOException e) {
+//			      System.out.println("IO Exception caused while reading the metadataPath");
+//			      e.printStackTrace();
+//			  }
+			  
+//			  String absolutePath = Paths.get(resource.toURI()).toString();
+////			  ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+////			  URL url = classLoader.getResource(metadataPath);
+////			  JarURLConnection connection = (JarURLConnection) url.openConnection();
+////			  JarFile file = connection.getJarFile();
+////			  String jarPath = file.getName();
+//			  
+//			  final Map<String, String> env = new HashMap<>();
+//			  URI uri = resource.toURI();
+//			  final String[] array = uri.toString().split("!");
+//			  final FileSystem fs = FileSystems.newFileSystem(URI.create(array[0]), env);
+//			  final Path path = fs.getPath(array[1]);
+//			  String absolutePath = path.toString();
+////			  String absolutePath = file.getAbsolutePath();
+//			  System.out.println("##### JAR Path: " + absolutePath);
+////			  System.out.println("##### Class Resource Path: " + res.getPath());
+//			  metadataPath = absolutePath;
+//		  }
+//		  
+//		  else {
+//			  System.out.println("############## Type: File");  //Run with IDE instead
+//		  }
+		 
 	        http
+	        	.cors()
+	        	.and()
 	            .csrf()
 	                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 	                .and()
@@ -76,6 +151,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	        		.and()
         		.apply(saml())
 	    	        .userDetailsService(samlUserService)
+	    	        .webSSOProfileConsumer(consumerImpl)
 	    	        .serviceProvider()
 	    	          .protocol(spProtocol)
 	    	          .hostname(spHost)
@@ -91,6 +167,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	    	        .and()
 	    	    .and();
 	    }
+	
+	 @Bean
+	 public CorsFilter corsFilter() {
+	   UrlBasedCorsConfigurationSource source = new 
+	   UrlBasedCorsConfigurationSource();
+	   CorsConfiguration config = new CorsConfiguration();
+	   config.setAllowCredentials(true);
+	   config.addAllowedOrigin("*");
+	   config.addAllowedHeader("*");
+	   config.addAllowedMethod("*");
+	   source.registerCorsConfiguration("/**", config);
+	   return new CorsFilter(source);
+	 }
 	 
 	 //For Dev Environment:
 	 @Bean

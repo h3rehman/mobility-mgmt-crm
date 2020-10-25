@@ -99,7 +99,7 @@ public class EventService {
 			}
 		}
 		
-		//Join the event
+		//Presenter joining the event
 		if (joinEve != false && presenterId != null) {
 			joinEvent(eve.getEventId(), presenterId);
 		}
