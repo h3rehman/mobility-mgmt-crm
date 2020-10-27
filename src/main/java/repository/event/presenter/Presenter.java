@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -14,6 +16,7 @@ import javax.persistence.Table;
 public class Presenter {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "PresenterID")
 	private Long presenterId;
 	
@@ -26,7 +29,7 @@ public class Presenter {
 	@JoinColumn(name = "PresenterID")
 	public List<Eventpresenter> eventPresenters;
 	
-	Presenter(){}
+	public Presenter(){}
 	
 	@Column(name = "lastname")
 	private String lastName;
