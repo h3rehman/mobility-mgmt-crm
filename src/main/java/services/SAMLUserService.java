@@ -35,9 +35,18 @@ public class SAMLUserService implements SAMLUserDetailsService {
 		if (presenter != null) {
 			return presenter;
 		}
-		//Create new Presenter if it does not exist
-		System.out.println("#### No User Found as Presenter... ########");
-		return null;
+		else {			
+			//Create new Presenter if it does not exist
+			System.out.println("#### No User Found with username: " + username + " Creating a new user.");
+			Presenter pres = new Presenter();
+			pres.setName(firstName);
+			pres.setLastName(lastName);
+			pres.setEmail(nameId);
+			pres.setUsername(username);
+			pres.setActive(true);
+			presenterRepository.save(pres);
+			return pres;
+		}
 		
 	}
 
