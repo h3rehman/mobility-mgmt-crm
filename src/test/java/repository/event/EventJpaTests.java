@@ -22,7 +22,7 @@ public class EventJpaTests {
 	@Test
 	public void testForAllEvents() {
 		List<Event> events = eventRepository.findAll();				
-		assertEquals(13, events.size());
+		assertEquals(16, events.size());
 		assertNotNull(events);
 				
 	}

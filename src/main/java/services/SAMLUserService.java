@@ -22,12 +22,8 @@ public class SAMLUserService implements SAMLUserDetailsService {
 		final String lastName = credential.getAttributeAsString("lastName");
 		final String upn = credential.getAttributeAsString("upn");  
 		final String nameId = credential.getNameID().getValue();
-		
-//		String nameIdSplits [] = nameId.split("@");
-//		final String username = nameIdSplits[0];
-		
 		final String username = credential.getAttributeAsString("username");
-		
+						
 		System.out.println("### User Attribute First Name: " + firstName);
 		System.out.println("### User Attribute Last Name: " + lastName);
 		System.out.println("### User Attribute UPN: " + upn);
@@ -39,11 +35,19 @@ public class SAMLUserService implements SAMLUserDetailsService {
 		if (presenter != null) {
 			return presenter;
 		}
-		//Create new Presenter if it does not exist
-		System.out.println("#### No User Found as Presenter... ########");
-		return null;
+		else {			
+			//Create new Presenter if it does not exist
+			System.out.println("#### No User Found with username: " + username + " Creating a new user.");
+			Presenter pres = new Presenter();
+			pres.setName(firstName);
+			pres.setLastName(lastName);
+			pres.setEmail(nameId);
+			pres.setUsername(username);
+			pres.setActive(true);
+			presenterRepository.save(pres);
+			return pres;
+		}
 		
-//		 return new User(nameId, firstName, lastName, nameId);
 	}
 
 	

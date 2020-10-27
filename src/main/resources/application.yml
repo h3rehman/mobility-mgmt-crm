@@ -23,9 +23,14 @@ spring.jpa.show-sql: true
 #spring.mustache.prefix: "classpath:/templates/"
 #spring.mustache.suffix: .html
 
+#Http vs Https Re-directs
+frontend:
+  protocol: http
+  host: "localhost:3000"
+
 #SAML Config
 onelogin:
-  metadata-path: "classpath:onelogin/onelogin_metadata_1267202.xml"
+  metadata-path: "classpath:onelogin/onelogin_metadata_1286425.xml"
   sp:
     protocol: http
     host: "localhost:9000"
