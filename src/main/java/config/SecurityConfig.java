@@ -68,6 +68,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
 	  @Value("${onelogin.sp.key-store.alias}")
 	  private String keyStoreAlias;
+	  
+	  @Value("${onelogin.sp.logoutUrl}")
+	  private String logoutUrl;
 
 
 	  @Value("${onelogin.sp.protocol}")
@@ -165,6 +168,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	    	        .identityProvider()
 	    	          .metadataFilePath(metadataPath)
 	    	        .and()
+	    	    .and()
+	    	    	.logout()
+	    	    	.logoutUrl(logoutUrl)
+	    	    	.logoutSuccessUrl("https://stagemmoutreach.rtachicago.org")
 	    	    .and();
 	    }
 	
