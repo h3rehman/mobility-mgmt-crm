@@ -4,7 +4,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import repository.event.Event;
@@ -25,6 +28,14 @@ public class NoteService {
 	
 	@Autowired
 	EventRepository eventRepository;
+	
+	DataSource dataSource;
+	JdbcTemplate jdbcTemplate;
+	
+	NoteService (DataSource dataSource){
+		this.dataSource = dataSource;
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	}
 	
 	public void addNote(Note note, Long orgId, Long presenterId, Long eventId) {
 		System.out.println("Finding OrgId: " + orgId);
@@ -47,6 +58,13 @@ public class NoteService {
 			}
 		}
 		noteRepository.save(note);
+		
+		String sql = "UPDATE Note "
+				   + "SET createdby = ?, lastmodifiedby = ? "
+				   + "WHERE NoteID = ?";
+
+		jdbcTemplate.update(sql, presenterId, presenterId, note.getNoteId());
+		
 	}
 	
 	public void editNote (Note note, Long noteId, Long presenterId) {
@@ -59,6 +77,12 @@ public class NoteService {
 			originalNote.setLastModifiedDate(LocalDateTime.now(central));
 			
 			noteRepository.save(originalNote);
+			
+			String sql = "UPDATE Note "
+					   + "SET lastmodifiedby = ? "
+					   + "WHERE NoteID = ?";
+
+			jdbcTemplate.update(sql, presenterId, noteId);
 		}
 	}
 
