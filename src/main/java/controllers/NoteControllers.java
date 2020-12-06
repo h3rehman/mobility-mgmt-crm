@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,10 +53,18 @@ public class NoteControllers {
 	
 	@GetMapping("/org/notes/{orgId}")
 	List<Map<String, Object>> getOrgNotes(@PathVariable Long orgId) {
-		String sql = "SELECT NoteID as noteId, noteentry as noteEntry " + 
-				     "FROM Note JOIN Organization " + 
-				     "ON Note.OrgID = Organization.OrgID " +
-				     "WHERE Organization.OrgID = ? ";
+		String sql = "SELECT n.NoteID as noteId, n.noteentry as noteEntry, " +
+					 "n.createddate as createDate, pc.name as createdByFirstName, pc.lastname as createdByLastName, " +
+				     "n.lastmodifieddate as lastModifiedDate, pl.name as lastModifiedByFirstName, pl.lastname as lastModifiedByLastName " + 
+				     "FROM Note as n " +
+				     "JOIN Organization o ON n.OrgID = o.OrgID "
+				     + "JOIN "
+				     	+ "(SELECT presenterid, name, lastname FROM presenter) pc "
+				     	+ "ON n.createdby = pc.presenterid "
+				     + "JOIN "
+				     	+ "(SELECT presenterid, name, lastname FROM presenter) pl "
+				     	+ "ON n.lastmodifiedby = pl.presenterid "
+				     + "WHERE o.OrgID = ?";
 		return jdbcTemplate.queryForList(sql, orgId);	
 //		return noteRepository.findByorg(orgId);  Gives null key JSON Exception
 	}
@@ -91,6 +100,18 @@ public class NoteControllers {
 		if (user != null) {
 			presenterId = user.getPresenterId();
 			noteService.editNote(note, noteId, presenterId);
+		}
+	}
+	
+	
+	@DeleteMapping("/deleteNote/{noteId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
+	public void deleteNote(@PathVariable Long noteId, 
+			@AuthenticationPrincipal Presenter user) {
+		if (user != null && noteId != null) {			
+			String sql = "DELETE from Note "
+					+ "WHERE NoteID = ?";
+			jdbcTemplate.update(sql, noteId);
 		}
 	}
 }
