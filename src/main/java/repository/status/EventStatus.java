@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import repository.event.Event;
 
 @Entity
-@Table(name = "EventStatus")
+@Table(name = "Eventstatus")
 public class EventStatus {
 	
 	@EmbeddedId
@@ -23,7 +23,7 @@ public class EventStatus {
 	
 	@ManyToOne
 	@MapsId("statusId")
-	@JoinColumn(name="statusId")
+	@JoinColumn(name="StatusID")
 	public Status status;
 	
 	public EventStatus() {}
