@@ -2,10 +2,12 @@ package services;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import org.joda.time.Instant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -42,8 +44,8 @@ public class NoteService {
 		ZoneId central = ZoneId.of("America/Chicago");
 		note.setCreateDate(LocalDateTime.now(central));
 		note.setLastModifiedDate(LocalDateTime.now(central));
-		System.out.println("Current Time: " + LocalDateTime.now(central));
-		if (orgId != null) {			
+		
+		if (orgId != null) {			 
 			Optional<Organization> optionalOrg = orgRepository.findById(orgId);
 			if (optionalOrg != null) {
 				Organization org = optionalOrg.get();
