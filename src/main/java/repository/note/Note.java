@@ -1,6 +1,8 @@
 package repository.note;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -10,13 +12,16 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import repository.calllog.CallLog;
 import repository.event.Event;
+import repository.event.presenter.Presenter;
 import repository.organization.Organization;
 
 
@@ -48,7 +53,21 @@ public class Note {
 	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name = "OrgID")
 	Organization org;
+	
+	@ManyToOne
+	@JoinColumn(name = "createdby")
+	Presenter createdBy;
+	
+	@ManyToOne
+	@JoinColumn(name = "lastmodifiedby")
+	Presenter lastModifiedBy;
+	
+	@OneToOne
+	@JoinColumn(name = "CalllogID")
+	CallLog callLog;
 
+	//Empty Constructor
+	public Note (){}
 
 	public Long getNoteId() {
 		return noteId;
@@ -90,8 +109,11 @@ public class Note {
 	}
 
 
-	public Event getEvent() {
-		return event;
+	public String getEvent() {
+		if (event != null) {
+			return event.getEventName();			
+		}
+		return null;
 	}
 
 
@@ -100,13 +122,37 @@ public class Note {
 	}
 
 
-	public Organization getOrg() {
-		return org;
-	}
+//	public String getOrg() {
+//		return org.getOrgname();
+//	}
 
 
 	public void setOrg(Organization org) {
 		this.org = org;
+	}
+
+	public Presenter getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Presenter createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Presenter getLastModifiedBy() {
+		return lastModifiedBy;
+	}
+
+	public void setLastModifiedBy(Presenter lastModifiedBy) {
+		this.lastModifiedBy = lastModifiedBy;
+	}
+
+	public CallLog getCallLog() {
+		return callLog;
+	}
+
+	public void setCallLog(CallLog callLog) {
+		this.callLog = callLog;
 	}
 	
 	

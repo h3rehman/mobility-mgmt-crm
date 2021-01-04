@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -29,8 +30,10 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import repository.organization.View;
 import repository.organization.contact.Contact;
+import repository.organization.contact.OrganizationContactRepository;
 import services.OrganizationService;
 import repository.organization.Organization;
+import repository.organization.OrganizationRepository;
 
 
 @RestController
@@ -42,6 +45,12 @@ public class OrganizationControllers {
 	JdbcTemplate jdbcTemplate;
 	@Autowired
 	OrganizationService orgService;
+	
+	@Autowired
+	OrganizationRepository orgRepository;
+	
+	@Autowired
+	OrganizationContactRepository orgContactRepository;
 	
 	@Autowired
 	OrganizationControllers (DataSource dataSource){
@@ -178,7 +187,6 @@ public class OrganizationControllers {
 				 	+ "WHERE orgid = ? "
 				 	+ "AND contactid = ?";
 		jdbcTemplate.update(sql, orgId, contactId);
-		System.out.println("########## DisAssociated Contact Id: " + contactId);
 	}
 	
 	@PostMapping("/orgContact/{orgId}") 
@@ -213,8 +221,21 @@ public class OrganizationControllers {
 				 	+ "WHERE eventId = ? "
 				 	+ "AND OrgID = ?";
 		jdbcTemplate.update(sql, eventId, orgId);
-		System.out.println("########## DisAssociated Org Id: " + orgId);
 	}
 	
-
+	@GetMapping("/orgContacts/{orgId}")
+	public List<Contact> getOrgContacts(@PathVariable Long orgId){
+		if(orgId !=-1) {			
+			Optional<Organization> optionalOrg = orgRepository.findById(orgId);
+			if (optionalOrg != null) {
+				Organization org = optionalOrg.get();
+				List<Contact> orgContacts = orgContactRepository.findByOrganization(org);
+				return orgContacts;
+			}
+			else {
+				return null;
+			}
+		}
+		return null;
+	}
 }
