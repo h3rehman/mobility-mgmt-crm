@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "Presenter")
 public class Presenter {
@@ -27,6 +29,7 @@ public class Presenter {
 	
 	@OneToMany
 	@JoinColumn(name = "PresenterID")
+	@JsonIgnore
 	public List<Eventpresenter> eventPresenters;
 	
 	public Presenter(){}

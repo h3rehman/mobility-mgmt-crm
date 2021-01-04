@@ -16,35 +16,38 @@ import javax.persistence.Table;
 public class Status {
 
 	@Id
-	@Column(name = "statusId")
-	long statusId;
+	@Column(name = "StatusID")
+	Long statusId;
 	
-	private String description;
-	private String type;
+	@Column(name = "statusdesc")
+	private String statusDesc;
+	
+	@Column(name = "statustype")
+	private String statusType;
 	
 	@OneToMany(cascade=CascadeType.ALL)
-	@JoinColumn(name = "statusId")
+	@JoinColumn(name = "StatusID")
 	Set<EventStatus> statusEvents;
 	
 	Status(){}
 	
-	public long getStatusId() {
+	public Long getStatusId() {
 		return statusId;
 	}
-	public void setStatusId(long statusId) {
+	public void setStatusId(Long statusId) {
 		this.statusId = statusId;
 	}
-	public String getDescription() {
-		return description;
+	public String getStatusDesc() {
+		return statusDesc;
 	}
-	public void setDescription(String description) {
-		this.description = description;
+	public void setStatusDesc(String description) {
+		this.statusDesc = description;
 	}
-	public String getType() {
-		return type;
+	public String getStatusType() {
+		return statusType;
 	}
-	public void setType(String type) {
-		this.type = type;
+	public void setStatusType(String type) {
+		this.statusType = type;
 	}
 	
 	
