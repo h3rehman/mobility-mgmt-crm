@@ -64,9 +64,27 @@ public class NoteControllers {
 				     + "JOIN "
 				     	+ "(SELECT presenterid, name, lastname FROM presenter) pl "
 				     	+ "ON n.lastmodifiedby = pl.presenterid "
-				     + "WHERE o.OrgID = ?";
+				     + "WHERE o.OrgID = ? AND n.CalllogID IS NULL";
 		return jdbcTemplate.queryForList(sql, orgId);	
 //		return noteRepository.findByorg(orgId);  Gives null key JSON Exception
+	}
+	
+	
+	@GetMapping("/org/callLogNotes/{orgId}")
+	List<Map<String, Object>> getOrgCallLogNotes(@PathVariable Long orgId) {
+		String sql = "SELECT n.CalllogID as callId, n.NoteID as noteId, n.noteentry as noteEntry, " +
+					 "n.createddate as createDate, pc.name as createdByFirstName, pc.lastname as createdByLastName, " +
+				     "n.lastmodifieddate as lastModifiedDate, pl.name as lastModifiedByFirstName, pl.lastname as lastModifiedByLastName " + 
+				     "FROM Note as n " +
+				     "JOIN Organization o ON n.OrgID = o.OrgID "
+				     + "JOIN "
+				     	+ "(SELECT presenterid, name, lastname FROM presenter) pc "
+				     	+ "ON n.createdby = pc.presenterid "
+				     + "JOIN "
+				     	+ "(SELECT presenterid, name, lastname FROM presenter) pl "
+				     	+ "ON n.lastmodifiedby = pl.presenterid "
+				     + "WHERE o.OrgID = ? AND n.CalllogID IS NOT NULL";
+		return jdbcTemplate.queryForList(sql, orgId);	
 	}
 	
 	@PostMapping("/org/newNote/{orgId}")
