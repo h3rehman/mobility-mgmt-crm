@@ -19,30 +19,32 @@ public class Audiencetype {
 
 	@Id
 	@Column(name = "audiencetypeid")
-	long audiencetypeId;
+	Long audiencetypeId;
 	
 	@Column(name = "audiencedesc")
-	String audieanceDesc;
+	String audienceDesc;
 	
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name = "audiencetypeid")
 	@JsonIgnore
 	Set<Eventaudiencetype> eventsForAudience;
+	
+	Audiencetype() {}
 
-	public long getAudienceTypeId() {
+	public Long getAudiencetypeId() {
 		return audiencetypeId;
 	}
 
-	public void setAudienceTypeId(long audienceTypeId) {
+	public void setAudiencetypeId(Long audienceTypeId) {
 		this.audiencetypeId = audienceTypeId;
 	}
 
-	public String getAudieanceDesc() {
-		return audieanceDesc;
+	public String getAudienceDesc() {
+		return audienceDesc;
 	}
 
-	public void setAudieanceDesc(String audieanceDesc) {
-		this.audieanceDesc = audieanceDesc;
+	public void setAudieanceDesc(String audienceDesc) {
+		this.audienceDesc = audienceDesc;
 	}
 
 	@JsonIgnore
@@ -53,7 +55,4 @@ public class Audiencetype {
 	public void setEventsForAudience(Set<Eventaudiencetype> eventAudienceTypes) {
 		this.eventsForAudience = eventAudienceTypes;
 	}
-	
-	
-	
 }

@@ -4,10 +4,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,10 @@ import repository.event.Event;
 import repository.event.EventRepository;
 import repository.event.Eventtype;
 import repository.event.EventtypeRepository;
+import repository.event.audience.Audiencetype;
+import repository.event.audience.AudiencetypeRepository;
+import repository.event.audience.Eventaudiencetype;
+import repository.event.audience.EventaudiencetypeRepository;
 import repository.event.presenter.EventPresenterRepository;
 import repository.event.presenter.Eventpresenter;
 import repository.event.presenter.Presenter;
@@ -45,6 +51,12 @@ public class EventService {
 	
 	@Autowired
 	EventPresenterRepository eventPresenterRepository;
+	
+	@Autowired
+	AudiencetypeRepository audienceTypeRepository;
+	
+	@Autowired
+	EventaudiencetypeRepository eventAudienceTypeRepository;
 	
 	public List<Event> getAllEvents(){
 		return eventRepository.findAll();
@@ -77,13 +89,15 @@ public class EventService {
 		return optEvent.orElseThrow(() -> new ClassNotFoundException("There is no Event with the id: " + id));
 	}
 
-	public void addEvent(Event eve, String eventTypeDesc, String orgId, Long presenterId, boolean joinEve) {
+	public void addEvent(Event eve, String eventTypeDesc, String orgId, 
+			Long presenterId, boolean joinEve, Long[] audTypes) {
 		Eventtype eventType = eventtypeRepository.findByeventTypeDesc(eventTypeDesc);
-		System.out.println("###################################");
-		System.out.println("Event Desc is: " + eventType.getEventTypeDesc());
-		System.out.println("###################################");
 		eve.setEventType(eventType);
 		eventRepository.save(eve);
+		
+		if (audTypes != null) {				
+			addAudienceTypes(audTypes, eve);
+		}
 		
 		//Associate Org:
 		Long oId = Long.parseLong(orgId);
@@ -103,11 +117,11 @@ public class EventService {
 		if (joinEve != false && presenterId != null) {
 			joinEvent(eve.getEventId(), presenterId);
 		}
-		
-		System.out.println("### New Event created with ID: " + eve.getEventId());
+	  System.out.println("### New Event created with ID: " + eve.getEventId());
 	}
 
-	public void updateEvent(Event eve, String eventTypeDesc, String orgId) {
+	public void updateEvent(Event eve, String eventTypeDesc, 
+			String orgId, Long[] audTypes) {
 		Eventtype eventType = eventtypeRepository.findByeventTypeDesc(eventTypeDesc);
 		Optional<Event> optionalEvent = eventRepository.findById(eve.getEventId());
 		
@@ -126,7 +140,13 @@ public class EventService {
 			eveOriginal.setRtaStaffCount(eve.getRtaStaffCount());
 			eveOriginal.setState(eve.getState());
 			eveOriginal.setZip(eve.getZip());
+
 			eventRepository.save(eveOriginal);
+			
+			if (audTypes != null) {				
+				addAudienceTypes(audTypes, eveOriginal);
+			}
+				
 			if (oId > 0) {
 				Optional<Organization> optionalOrg = orgRepository.findById(oId);
 				if(optionalOrg != null) {
@@ -143,8 +163,7 @@ public class EventService {
 		}
 		else {
 			System.out.println("Event is null");
-		}
-		
+		}	
 	}
 
 	public void joinEvent(Long eventId, Long presenterId) {
@@ -163,6 +182,19 @@ public class EventService {
 		else {
 			System.out.println("Either Event or Presenter is null...");
 		}		
+	}
+	
+	void addAudienceTypes(Long[] audTypes, Event event) {
+		for (int i=0; i<audTypes.length; i++) {
+			Optional<Audiencetype> optionalAudType = audienceTypeRepository.findById(audTypes[i]);
+			if (optionalAudType != null) {
+				Audiencetype originalAudType = optionalAudType.get();
+				Eventaudiencetype eveAud = new Eventaudiencetype();
+				eveAud.setEvent(event);
+				eveAud.setAudienceType(originalAudType);
+				eventAudienceTypeRepository.save(eveAud);
+			}
+		}
 	}
 	
 }

@@ -96,13 +96,13 @@ public class EventControllers {
 	@ResponseStatus(HttpStatus.CREATED) //201
 	public ResponseEntity<Void> createEvent(@RequestBody Event eve, 
 	@PathVariable String eventType, @PathVariable String orgId, @PathVariable boolean joinEve, 
-	@AuthenticationPrincipal Presenter user){ 
+	@AuthenticationPrincipal Presenter user, @RequestParam(value="audType", required=false) Long [] audTypes){ 
 		Long presenterId = null;
 		if (user != null) {
 			presenterId = user.getPresenterId();
 		}
 		
-		eventService.addEvent(eve, eventType, orgId, presenterId, joinEve);
+		eventService.addEvent(eve, eventType, orgId, presenterId, joinEve, audTypes);
  		
 		// Build the location URI of the new item
 		 URI location = ServletUriComponentsBuilder
@@ -117,8 +117,9 @@ public class EventControllers {
 	
 	@PutMapping("/event/{eventType}/{orgId}/{joinEve}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
-	public void updateEvent(@RequestBody Event eve, @PathVariable String eventType, @PathVariable String orgId) {
-		eventService.updateEvent(eve, eventType, orgId);
+	public void updateEvent(@RequestBody Event eve, @PathVariable String eventType, 
+		@PathVariable String orgId, @RequestParam(value="audType", required=false) Long [] audTypes) {
+		eventService.updateEvent(eve, eventType, orgId, audTypes);
 	}
 	
 	@PutMapping("/joinevent/{eventId}")
