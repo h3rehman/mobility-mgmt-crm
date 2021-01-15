@@ -11,24 +11,24 @@ public class EventAudienceTypeKey implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	@Column(name = "EventID")
-	private long eventId;
+	private Long eventId;
 	
 	@Column(name = "audiencetypeid")
-	private long audiencetypeId;
+	private Long audiencetypeId;
 
-	public long getEventId() {
+	public Long getEventId() {
 		return eventId;
 	}
 
-	public void setEventId(long eventId) {
+	public void setEventId(Long eventId) {
 		this.eventId = eventId;
 	}
 
-	public long getAudiencetypeId() {
+	public Long getAudiencetypeId() {
 		return audiencetypeId;
 	}
 
-	public void setAudiencetypeId(long audiencetypeId) {
+	public void setAudiencetypeId(Long audiencetypeId) {
 		this.audiencetypeId = audiencetypeId;
 	}
 

@@ -14,7 +14,7 @@ import repository.event.Event;
 public class Eventaudiencetype {
 	
 	@EmbeddedId
-	EventAudienceTypeKey id;
+	EventAudienceTypeKey id = new EventAudienceTypeKey();
 	
 	@ManyToOne
 	@MapsId("eventId")

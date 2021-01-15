@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 
+import repository.event.audience.Audiencetype;
 import repository.event.audience.Eventaudiencetype;
 import repository.event.presenter.Eventpresenter;
 import repository.event.presenter.Presenter;
@@ -233,18 +234,26 @@ public class Event {
 		this.eventPresenters = eventPresenters;
 	}
 
-	
-	public Set<String> getEventaudienceType() {
-		Set <String> audiences = new HashSet<String>();
-		for(Eventaudiencetype audType : eventaudienceTypes) {
-			audiences.add(audType.getAudienceType().getAudieanceDesc());
+	public Set<Audiencetype> fetchAudienceTypes(){
+		Set<Audiencetype> audTypes = new HashSet<Audiencetype>(); 
+		for(Eventaudiencetype eveAudType : eventaudienceTypes) {
+			audTypes.add(eveAudType.getAudienceType());
 		}
-		return audiences;
+		return audTypes;
+	}
+	
+	public List<String> getEventaudienceType() {
+		List<String> audienceTypes = new ArrayList<String>();
+		for(Eventaudiencetype eveAudType : eventaudienceTypes) {
+			audienceTypes.add(eveAudType.getAudienceType().getAudienceDesc());
+		}
+		return audienceTypes;
 	}
 
 	public void setEventaudienceType(Set<Eventaudiencetype> eventaudienceTypes) {
 		this.eventaudienceTypes = eventaudienceTypes;
 	}
+	
 	
 	@JsonProperty
 	public HashMap<Long, String> getOrgNames(){
