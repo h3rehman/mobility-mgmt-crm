@@ -6,6 +6,10 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import repository.event.Event;
+import repository.event.EventRepository;
 import repository.event.presenter.Presenter;
 import repository.organization.Organization;
 import services.EventService;
@@ -38,6 +43,9 @@ public class EventControllers {
 	
 	@Autowired
 	EventService eventService;
+	
+	@Autowired
+	EventRepository eventRepository;
 
 	EventControllers (DataSource dataSource){
 		this.dataSource = dataSource;
@@ -136,5 +144,43 @@ public class EventControllers {
 			System.out.println(user.getName() + " joined Event Id: " + eventId);
 		}
 	}
+	
+	@GetMapping("/events-paged/{pageNumber}/{pageElements}")
+	public Page<Event> getPagedEvents(@PathVariable Integer pageNumber, 
+			@PathVariable Integer pageElements){
+		Pageable pagedEvent = PageRequest.of(pageNumber, pageElements);
+		
+		Page<Event> pagedEvents = eventRepository.findAll(pagedEvent);
+		return pagedEvents;
+	}
+	
+	@GetMapping("/events-sorted-default/{pageNumber}/{pageElements}")
+	public Page<Event> getListedEvents(@PathVariable Integer pageNumber, 
+			@PathVariable Integer pageElements){
+		Pageable pagedEvent = PageRequest.of(pageNumber, pageElements, Sort.by("startDateTime").descending());
+		Page<Event> pagedEvents = eventRepository.findAll(pagedEvent);
+		return pagedEvents;
+	}
+	
+	@GetMapping("/events-sorted-custom/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}")
+	public Page<Event> getCustomSortedEvents(@PathVariable Integer pageNumber, 
+			@PathVariable Integer pageElements, @PathVariable String fieldName, @PathVariable String sortOrder){
+		Pageable pagedEvent = null;
+		if (!fieldName.equalsIgnoreCase("null")) {
+			if (sortOrder.equalsIgnoreCase("asce") || sortOrder.equalsIgnoreCase("null") ) {
+				pagedEvent = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).ascending());
+			}
+			else {
+				pagedEvent = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).descending());
+			}
+		}
+		else { //default sort 
+			pagedEvent = PageRequest.of(pageNumber, pageElements, Sort.by("startDateTime").descending());
+		}
+		Page<Event> pagedEvents = eventRepository.findAll(pagedEvent);
+		return pagedEvents;
+	}
+
+	
 	
 }
