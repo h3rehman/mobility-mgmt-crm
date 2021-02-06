@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -46,7 +47,8 @@ public class Eventtype {
 	public void setEvents(Set<Event> events) {
 		this.events = events;
 	}
-
+	
+	@JsonIgnore
 	public Set<Event> getEvents() {
 		return events;
 	}

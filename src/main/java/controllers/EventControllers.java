@@ -1,7 +1,11 @@
 package controllers;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -28,6 +32,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import repository.event.Event;
 import repository.event.EventRepository;
+import repository.event.Eventtype;
+import repository.event.EventtypeRepository;
 import repository.event.presenter.Presenter;
 import repository.organization.Organization;
 import services.EventService;
@@ -46,6 +52,9 @@ public class EventControllers {
 	
 	@Autowired
 	EventRepository eventRepository;
+	
+	@Autowired
+	EventtypeRepository eventTypeRepository;
 
 	EventControllers (DataSource dataSource){
 		this.dataSource = dataSource;
@@ -145,15 +154,6 @@ public class EventControllers {
 		}
 	}
 	
-	@GetMapping("/events-paged/{pageNumber}/{pageElements}")
-	public Page<Event> getPagedEvents(@PathVariable Integer pageNumber, 
-			@PathVariable Integer pageElements){
-		Pageable pagedEvent = PageRequest.of(pageNumber, pageElements);
-		
-		Page<Event> pagedEvents = eventRepository.findAll(pagedEvent);
-		return pagedEvents;
-	}
-	
 	@GetMapping("/events-sorted-default/{pageNumber}/{pageElements}")
 	public Page<Event> getListedEvents(@PathVariable Integer pageNumber, 
 			@PathVariable Integer pageElements){
@@ -162,25 +162,74 @@ public class EventControllers {
 		return pagedEvents;
 	}
 	
-	@GetMapping("/events-sorted-custom/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}")
-	public Page<Event> getCustomSortedEvents(@PathVariable Integer pageNumber, 
-			@PathVariable Integer pageElements, @PathVariable String fieldName, @PathVariable String sortOrder){
-		Pageable pagedEvent = null;
+	
+	@GetMapping("/events-filtered-sorted/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}/{from}/{to}")
+	public Page<Event> getFilteredSortedEvents(@PathVariable Integer pageNumber, 
+			@PathVariable Integer pageElements, @PathVariable String fieldName, 
+			@PathVariable String sortOrder, @PathVariable String from, @PathVariable String to, 
+			@RequestParam(value="eveType", required=false) String [] eveTypes){
+		
+		Page<Event> events = null;
+		Pageable pageable = null;
 		if (!fieldName.equalsIgnoreCase("null")) {
 			if (sortOrder.equalsIgnoreCase("asce") || sortOrder.equalsIgnoreCase("null") ) {
-				pagedEvent = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).ascending());
+				pageable = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).ascending());
 			}
 			else {
-				pagedEvent = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).descending());
+				pageable = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).descending());
 			}
 		}
 		else { //default sort 
-			pagedEvent = PageRequest.of(pageNumber, pageElements, Sort.by("startDateTime").descending());
+			pageable = PageRequest.of(pageNumber, pageElements, Sort.by("startDateTime").descending());
 		}
-		Page<Event> pagedEvents = eventRepository.findAll(pagedEvent);
-		return pagedEvents;
-	}
-
+		
+		LocalDateTime fromDate = null;
+		LocalDateTime toDate = null;
 	
+		List<Eventtype> eventTypes = new ArrayList<Eventtype>();
+		if (eveTypes != null) {
+			for (int i=0; i<eveTypes.length; i++) {
+				Eventtype eveType = eventTypeRepository.findByeventTypeDesc(eveTypes[i]);
+				if (eveType != null) {
+					eventTypes.add(eveType);
+				}
+			}
+		}
+	
+		if (!from.equalsIgnoreCase("null") && !to.equalsIgnoreCase("null")) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			fromDate = LocalDateTime.parse(from, formatter);
+			toDate = LocalDateTime.parse(to, formatter);
+		}
+		
+		//Option: 1	
+		if (eventTypes.size() > 0 && fromDate != null && toDate != null) {
+			events = eventRepository.
+		findBystartDateTimeBetweenAndeventTypeIn(fromDate, toDate, eventTypes, pageable);
+		}
+		
+		//Option: 2
+		else if(eventTypes.size() > 0 && fromDate == null && toDate == null) {
+			events = eventRepository.findAllByeventTypeIn(eventTypes, pageable);
+		}
+		
+		//Option: 3
+		else if (fromDate != null && toDate != null && eventTypes.size() < 1) {
+			events = eventRepository.findBystartDateTimeBetween(fromDate, toDate, pageable);
+		}
+		
+		//Option: 4
+		else {
+			events = eventRepository.findAll(pageable);
+		}
+		return events;
+	}
+	
+	
+	@GetMapping("/all-event-types")
+	public List<Eventtype> getEventTypes(){
+		List<Eventtype> allEventTypes = eventTypeRepository.findAll();
+		return allEventTypes;
+	}
 	
 }
