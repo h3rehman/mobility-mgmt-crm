@@ -30,6 +30,8 @@ import repository.organization.EventOrganization;
 import repository.organization.EventOrganizationRepository;
 import repository.organization.Organization;
 import repository.organization.OrganizationRepository;
+import repository.status.Status;
+import repository.status.StatusRepository;
 
 @Service
 public class EventService {
@@ -57,6 +59,9 @@ public class EventService {
 	
 	@Autowired
 	EventaudiencetypeRepository eventAudienceTypeRepository;
+	
+	@Autowired
+	StatusRepository statusRepository;
 	
 	public List<Event> getAllEvents(){
 		return eventRepository.findAll();
@@ -90,7 +95,15 @@ public class EventService {
 	}
 
 	public void addEvent(Event eve, String eventTypeDesc, String orgId, 
-			Long presenterId, boolean joinEve, Long[] audTypes) {
+			Long presenterId, boolean joinEve, Long[] audTypes, String lastStatus) {
+
+		Status status = null;
+		if (lastStatus != null || lastStatus != "") {
+			status = statusRepository.findBystatusDesc(lastStatus);
+			if (status != null) {
+				eve.setLastStatus(status);
+			}
+		}
 		Eventtype eventType = eventtypeRepository.findByeventTypeDesc(eventTypeDesc);
 		eve.setEventType(eventType);
 		eventRepository.save(eve);
@@ -109,7 +122,14 @@ public class EventService {
 				eveOrg.setEvent(eve);
 				eveOrg.setOrganization(org);
 				eventOrgRepository.save(eveOrg);
-				System.out.println("##### NEW EVENT CREATED, Event ID: " + eve.getEventId() + " " + "associated Org Id: " + org.getOrgId());
+				
+				if (status != null) {
+						org.setLastStatus(status);
+						orgRepository.save(org);
+					}
+				
+	System.out.println("##### NEW EVENT CREATED, Event ID: " + eve.getEventId() + 
+			" " + "associated Org Id: " + org.getOrgId());
 			}
 		}
 		
@@ -121,12 +141,15 @@ public class EventService {
 	}
 
 	public void updateEvent(Event eve, String eventTypeDesc, 
-			String orgId, Long[] audTypes) {
+			String orgId, Long[] audTypes, String lastStatus) {
 		Eventtype eventType = eventtypeRepository.findByeventTypeDesc(eventTypeDesc);
 		Optional<Event> optionalEvent = eventRepository.findById(eve.getEventId());
 		
 		Long oId = Long.parseLong(orgId);
-		
+		Status status = null;
+		if (lastStatus != null || lastStatus != "") {
+		status = statusRepository.findBystatusDesc(lastStatus);
+		}
 		if (optionalEvent != null) {
 			Event eveOriginal = optionalEvent.get();
 			eveOriginal.setEventType(eventType);
@@ -140,6 +163,10 @@ public class EventService {
 			eveOriginal.setRtaStaffCount(eve.getRtaStaffCount());
 			eveOriginal.setState(eve.getState());
 			eveOriginal.setZip(eve.getZip());
+			
+			if (status != null) {
+				eveOriginal.setLastStatus(status);
+			}
 
 			eventRepository.save(eveOriginal);
 			
@@ -150,14 +177,24 @@ public class EventService {
 			if (oId > 0) {
 				Optional<Organization> optionalOrg = orgRepository.findById(oId);
 				if(optionalOrg != null) {
-					HashMap<Long, String> associatedOrgs = eveOriginal.getOrgNames();
+					Organization org = optionalOrg.get();
+					
+					HashMap<Long, String> associatedOrgs = eveOriginal.eventOrgNames();
 					if (!associatedOrgs.containsKey(oId)) {  //only add if the Organization does not exist. 
-						Organization org = optionalOrg.get();
 						EventOrganization eveOrg = new EventOrganization();
 						eveOrg.setEvent(eveOriginal);
 						eveOrg.setOrganization(org);
 						eventOrgRepository.save(eveOrg);					
 					}
+				}
+			}
+			//Update Last Status of each Org associated with this event
+			List<Organization> orgs = eveOriginal.orgsInEvent();
+			if (orgs.size() > 0 && status != null) {
+				for (int i=0; i<orgs.size(); i++) {
+					Organization org = orgs.get(i);
+					org.setLastStatus(status);
+					orgRepository.save(org);
 				}
 			}
 		}

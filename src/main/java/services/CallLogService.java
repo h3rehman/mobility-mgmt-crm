@@ -79,6 +79,14 @@ public class CallLogService {
 				Optional<Organization> optionalOrg = orgRepository.findById(orgId);
 				if (optionalOrg != null) {
 					Organization org = optionalOrg.get();
+					if (lastStatusId != -1) {
+						Optional<Status> optionalStatus = statusRepository.findById(lastStatusId);
+						if (optionalStatus != null) {
+							Status lastStatus = optionalStatus.get();
+							org.setLastStatus(lastStatus);
+							orgRepository.save(org);
+						}
+					}
 					callLog.setOrg(org);
 					note.setOrg(org);
 				}

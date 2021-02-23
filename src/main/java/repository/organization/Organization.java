@@ -32,6 +32,7 @@ import repository.event.Event;
 import repository.organization.contact.Contact;
 import repository.organization.contact.OrganizationContact;
 import repository.organization.county.County;
+import repository.status.Status;
 
 @Entity
 @Table(name="Organization")
@@ -56,6 +57,10 @@ public class Organization {
 	String altphone;
 	@JsonView(View.OrgDetail.class)
 	String zip;
+	
+	@ManyToOne
+	@JoinColumn(name = "laststatusID")
+	Status lastStatus;
 	
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name="OrgID")
@@ -172,5 +177,16 @@ public class Organization {
 	}
 	public void setOrgId(Long orgId) {
 		this.orgId = orgId;
+	}
+	public String getLastStatus() {
+		if (lastStatus != null) {
+			return lastStatus.getStatusDesc();
+		}
+		else {
+			return null;
+		}
+	}
+	public void setLastStatus(Status lastStatus) {
+		this.lastStatus = lastStatus;
 	}
 }

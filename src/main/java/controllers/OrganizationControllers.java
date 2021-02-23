@@ -3,6 +3,7 @@ package controllers;
 import java.net.URI;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,6 +11,10 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,7 +36,13 @@ import com.fasterxml.jackson.annotation.JsonView;
 import repository.organization.View;
 import repository.organization.contact.Contact;
 import repository.organization.contact.OrganizationContactRepository;
+import repository.organization.county.County;
+import repository.organization.county.CountyRepository;
+import repository.status.Status;
+import repository.status.StatusRepository;
 import services.OrganizationService;
+import repository.event.Event;
+import repository.event.Eventtype;
 import repository.organization.Organization;
 import repository.organization.OrganizationRepository;
 
@@ -53,12 +64,16 @@ public class OrganizationControllers {
 	OrganizationContactRepository orgContactRepository;
 	
 	@Autowired
+	CountyRepository countyRepository;
+	
+	@Autowired
+	StatusRepository statusRepository;
+	
+	@Autowired
 	OrganizationControllers (DataSource dataSource){
 		this.dataSource = dataSource;
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
-	
-
 	
 	@GetMapping("/accounts")
 	public String accounts() throws SQLException{
@@ -112,8 +127,84 @@ public class OrganizationControllers {
 	}
 	@JsonView(View.OrgDetail.class)
 	@GetMapping("/organizations")
-	public List<Organization> getCustomers(){
+	public List<Organization> getAllOrgs(){
 		return orgService.getAllOrganizations();
+	}
+	
+	
+	@GetMapping("/orgs-sorted-default")
+	Page<Organization> getOrgsDefault () {
+		final int pageNumber = 0;
+		final int pageElements = 10;
+		Pageable pageable = PageRequest.
+				of(pageNumber, pageElements, Sort.by("orgname").ascending());
+		Page<Organization> pagedOrgs = orgRepository.findAll(pageable);
+		return pagedOrgs;
+	}
+	
+	
+	@GetMapping("/orgs-filtered-sorted/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}")
+	Page<Organization> getFilteredSortedOrgs(@PathVariable Integer pageNumber, @PathVariable Integer pageElements,
+			@PathVariable String fieldName, @PathVariable String sortOrder,
+			@RequestParam(value="county", required=false) String [] counties,
+			@RequestParam(value="status", required=false) String [] statuses){
+		
+		Page<Organization> orgs = null;
+		Pageable pageable = null;
+		if (!fieldName.equalsIgnoreCase("null")) {
+			if (sortOrder.equalsIgnoreCase("asce") || sortOrder.equalsIgnoreCase("null") ) {
+				pageable = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).ascending());
+			}
+			else {
+				pageable = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).descending());
+			}
+		}
+		else { //default sort 
+			pageable = PageRequest.of(pageNumber, pageElements, Sort.by("county.countyDesc").ascending());
+		}
+		
+		
+		List<County> confirmedCounties = new ArrayList<County>();
+		if (counties != null) {
+			for (int i=0; i<counties.length; i++) {
+				County ct = countyRepository.findBycountyDesc(counties[i]);
+				if (ct != null) {
+					confirmedCounties.add(ct);
+				}
+			}
+		}
+		
+		List<Status> confirmedStatuses = new ArrayList<Status>();
+		if (statuses != null) {
+			for (int i=0; i<statuses.length; i++) {
+				Status st = statusRepository.findBystatusDesc(statuses[i]);
+				if (st != null) {
+					confirmedStatuses.add(st);
+				}
+			}
+		}
+		
+		//Option 1:
+		if (confirmedCounties.size() > 0) {
+			//Option 1a:
+			if (confirmedStatuses.size() > 0) {
+				orgs = orgRepository.findByCountyInAndLastStatusIn(confirmedCounties, confirmedStatuses, pageable);
+			}
+			//Option 1b:
+			else {
+				orgs = orgRepository.findAllBycountyIn(confirmedCounties, pageable);
+			}
+		}
+		//Option 2:
+		else if (confirmedStatuses.size() > 0) {
+			orgs = orgRepository.findAllBylastStatusIn(confirmedStatuses, pageable);
+		}
+		//Option 3:
+		else {
+			orgs = orgRepository.findAll(pageable);
+		}
+		
+		return orgs;		
 	}
 	
 	@GetMapping("/contacts")
