@@ -14,4 +14,6 @@ public interface StatusRepository extends JpaRepository<Status, Long>{
 	
 	List<Status> findBystatusType (String statusType);
 	
+	Status findBystatusDesc (String statusDesc);
+	
 }

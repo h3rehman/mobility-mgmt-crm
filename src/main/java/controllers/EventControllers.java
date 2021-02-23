@@ -109,17 +109,17 @@ public class EventControllers {
 		return eventService.myUpcomingAppointments(user.getPresenterId());
 	}
 	
-	@PostMapping("/event/{eventType}/{orgId}/{joinEve}")
+	@PostMapping("/event/{eventType}/{orgId}/{joinEve}/{lastStatus}")
 	@ResponseStatus(HttpStatus.CREATED) //201
-	public ResponseEntity<Void> createEvent(@RequestBody Event eve, 
-	@PathVariable String eventType, @PathVariable String orgId, @PathVariable boolean joinEve, 
+	public ResponseEntity<Void> createEvent(@RequestBody Event eve, @PathVariable String eventType,
+	@PathVariable String orgId, @PathVariable boolean joinEve, @PathVariable String lastStatus,
 	@AuthenticationPrincipal Presenter user, @RequestParam(value="audType", required=false) Long [] audTypes){ 
 		Long presenterId = null;
 		if (user != null) {
 			presenterId = user.getPresenterId();
 		}
 		
-		eventService.addEvent(eve, eventType, orgId, presenterId, joinEve, audTypes);
+		eventService.addEvent(eve, eventType, orgId, presenterId, joinEve, audTypes, lastStatus);
  		
 		// Build the location URI of the new item
 		 URI location = ServletUriComponentsBuilder
@@ -132,11 +132,12 @@ public class EventControllers {
 		 return ResponseEntity.created(location).build();	
 	}
 	
-	@PutMapping("/event/{eventType}/{orgId}/{joinEve}")
+	@PutMapping("/event/{eventType}/{orgId}/{joinEve}/{lastStatus}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
-	public void updateEvent(@RequestBody Event eve, @PathVariable String eventType, 
-		@PathVariable String orgId, @RequestParam(value="audType", required=false) Long [] audTypes) {
-		eventService.updateEvent(eve, eventType, orgId, audTypes);
+	public void updateEvent(@RequestBody Event eve, @PathVariable String lastStatus,
+		@PathVariable String eventType, @PathVariable String orgId, 
+		@RequestParam(value="audType", required=false) Long [] audTypes) {
+		eventService.updateEvent(eve, eventType, orgId, audTypes, lastStatus);
 	}
 	
 	@PutMapping("/joinevent/{eventId}")

@@ -29,8 +29,10 @@ import repository.event.audience.Eventaudiencetype;
 import repository.event.presenter.Eventpresenter;
 import repository.event.presenter.Presenter;
 import repository.organization.EventOrganization;
+import repository.organization.Organization;
 import repository.organization.View;
 import repository.status.EventStatus;
+import repository.status.Status;
 
 @Entity
 @Table(name = "Event")
@@ -92,6 +94,10 @@ public class Event {
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name = "EventID")
 	Set<EventStatus> eventStatuses;
+	
+	@ManyToOne
+	@JoinColumn(name = "laststatusID")
+	Status lastStatus;
 
 	//Empty Constructor for JPA
 	Event(){}
@@ -255,8 +261,8 @@ public class Event {
 	}
 	
 	
-	@JsonProperty
-	public HashMap<Long, String> getOrgNames(){
+	@JsonIgnore
+	public HashMap<Long, String> eventOrgNames(){
 		HashMap<Long, String> orgs = new HashMap<>();
 		for (EventOrganization eveOrg: eventOrganizations) {
 			orgs.put(eveOrg.getOrganization().getOrgId(), eveOrg.getOrganization().getOrgname());
@@ -264,9 +270,42 @@ public class Event {
 		return orgs;
 	}
 	
+	@JsonProperty
+	public HashMap<Long, List<String>> getOrgNames(){
+		HashMap<Long, List<String>> orgs = new HashMap<>();
+		for (EventOrganization eveOrg: eventOrganizations) {
+			List<String> orgNameStatus = new ArrayList<>();
+			orgNameStatus.add(eveOrg.getOrganization().getOrgname());
+			orgNameStatus.add(eveOrg.getOrganization().getLastStatus());
+			orgs.put(eveOrg.getOrganization().getOrgId(), orgNameStatus);
+		}
+		return orgs;
+	}
+
+	
+	@JsonIgnore
+	public List<Organization> orgsInEvent () {
+		List<Organization> orgs = new ArrayList<Organization>();
+		for (EventOrganization eveOrg: eventOrganizations) {
+			orgs.add(eveOrg.getOrganization());
+		}
+		return orgs;
+	}
+	
 	@JsonIgnore
 	private void setOrgNames(Set<EventOrganization> eveOrgs) {
 		this.eventOrganizations = eveOrgs;
+	}
+
+	public String getLastStatus() {
+		if (lastStatus != null) {
+			return lastStatus.getStatusDesc();
+		}
+		return null;
+	}	
+
+	public void setLastStatus(Status lastStatus) {
+		this.lastStatus = lastStatus;
 	}
 
 }
