@@ -41,6 +41,9 @@ public class Contact {
 	String email;
 	@JsonView(View.OrgDetail.class)
 	String phone;
+	@JsonView(View.OrgDetail.class)
+	@Column(name="altphone")
+	String altPhone;
 
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name="ContactID")
@@ -50,12 +53,6 @@ public class Contact {
 	//Empty contructor for JPA
 	public Contact () {}
 
-	Contact (String firstName, String lastName) {
-		this.firstName = firstName;
-		this.lastName = lastName;
-	}
-	
-		
 	public String getFirstName() {
 		return firstName;
 	}
@@ -110,6 +107,14 @@ public class Contact {
 
 	public void setContactOrgs(List<OrganizationContact> customerContacts) {
 		this.contactOrgs = customerContacts;
+	}
+
+	public String getAltPhone() {
+		return altPhone;
+	}
+
+	public void setAltPhone(String altPhone) {
+		this.altPhone = altPhone;
 	}
 		
 }
