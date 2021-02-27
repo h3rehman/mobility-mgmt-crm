@@ -98,9 +98,23 @@ public class EventService {
 			Long presenterId, boolean joinEve, Long[] audTypes, String lastStatus) {
 
 		Status status = null;
-		if (lastStatus != null || lastStatus != "") {
+		if (lastStatus != null) {
 			status = statusRepository.findBystatusDesc(lastStatus);
 			if (status != null) {
+				eve.setLastStatus(status);
+			}
+			else {
+				Optional<Status> optionalStatus = statusRepository.findById(11L);
+				if (optionalStatus != null) {
+					status = optionalStatus.get();
+					eve.setLastStatus(status);
+				}
+			}
+		}
+		else {
+			Optional<Status> optionalStatus = statusRepository.findById(11L); //Id for Info Needed 
+			if (optionalStatus != null) {
+				status = optionalStatus.get();
 				eve.setLastStatus(status);
 			}
 		}
@@ -123,11 +137,9 @@ public class EventService {
 				eveOrg.setOrganization(org);
 				eventOrgRepository.save(eveOrg);
 				
-				if (status != null) {
-						org.setLastStatus(status);
-						orgRepository.save(org);
-					}
-				
+				org.setLastStatus(status);
+				orgRepository.save(org);
+		
 	System.out.println("##### NEW EVENT CREATED, Event ID: " + eve.getEventId() + 
 			" " + "associated Org Id: " + org.getOrgId());
 			}
@@ -184,7 +196,9 @@ public class EventService {
 						EventOrganization eveOrg = new EventOrganization();
 						eveOrg.setEvent(eveOriginal);
 						eveOrg.setOrganization(org);
-						eventOrgRepository.save(eveOrg);					
+						eventOrgRepository.save(eveOrg);
+						org.setLastStatus(status);
+						orgRepository.save(org);
 					}
 				}
 			}
