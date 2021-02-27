@@ -36,6 +36,8 @@ import repository.event.Eventtype;
 import repository.event.EventtypeRepository;
 import repository.event.presenter.Presenter;
 import repository.organization.Organization;
+import repository.status.Status;
+import repository.status.StatusRepository;
 import services.EventService;
 
 
@@ -55,6 +57,9 @@ public class EventControllers {
 	
 	@Autowired
 	EventtypeRepository eventTypeRepository;
+	
+	@Autowired
+	StatusRepository statusRepository;
 
 	EventControllers (DataSource dataSource){
 		this.dataSource = dataSource;
@@ -168,7 +173,8 @@ public class EventControllers {
 	public Page<Event> getFilteredSortedEvents(@PathVariable Integer pageNumber, 
 			@PathVariable Integer pageElements, @PathVariable String fieldName, 
 			@PathVariable String sortOrder, @PathVariable String from, @PathVariable String to, 
-			@RequestParam(value="eveType", required=false) String [] eveTypes){
+			@RequestParam(value="eveType", required=false) String [] eveTypes,
+			@RequestParam(value="eveStatus", required=false) String eveStatus){
 		
 		Page<Event> events = null;
 		Pageable pageable = null;
@@ -196,6 +202,20 @@ public class EventControllers {
 				}
 			}
 		}
+		
+		boolean statusNullCheck = false;
+		Status eventStatus = null;
+		if (eveStatus != null) {
+			if (eveStatus.equalsIgnoreCase("null")) {
+				statusNullCheck = true;
+			}
+			else {
+				Status eventStatusCheck = statusRepository.findBystatusDesc(eveStatus);
+				if (eventStatusCheck != null) {
+					eventStatus = eventStatusCheck;
+				}
+			}
+		}
 	
 		if (!from.equalsIgnoreCase("null") && !to.equalsIgnoreCase("null")) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -205,28 +225,77 @@ public class EventControllers {
 		
 		//Option: 1	
 		if (eventTypes.size() > 0 && fromDate != null && toDate != null) {
-			events = eventRepository.
-		findBystartDateTimeBetweenAndeventTypeIn(fromDate, toDate, eventTypes, pageable);
+			
+			if (statusNullCheck) {
+				events = eventRepository.
+						findByStartDateTimeBetweenAndEventTypeInAndLastStatusIsNull
+						(fromDate, toDate, eventTypes, pageable);
+			}
+			else if (eventStatus != null) {
+				events = eventRepository.
+						findBystartDateTimeBetweenAndeventTypeInAndlastStatus
+						(fromDate, toDate, eventTypes, eventStatus, pageable);
+			}
+			else {
+				events = eventRepository.
+						findBystartDateTimeBetweenAndeventTypeIn
+						(fromDate, toDate, eventTypes, pageable);
+			}
 		}
 		
 		//Option: 2
 		else if(eventTypes.size() > 0 && fromDate == null && toDate == null) {
-			events = eventRepository.findAllByeventTypeIn(eventTypes, pageable);
+			
+			if (statusNullCheck) {
+				events = eventRepository.
+						findByEventTypeInAndLastStatusIsNull
+						(eventTypes, pageable);
+			}
+			else if (eventStatus != null) {
+				events = eventRepository.
+						findByEventTypeInAndLastStatus
+						(eventTypes, eventStatus, pageable);
+			}
+			else {
+				events = eventRepository.findAllByeventTypeIn(eventTypes, pageable);
+			}
 		}
 		
 		//Option: 3
 		else if (fromDate != null && toDate != null && eventTypes.size() < 1) {
-			events = eventRepository.findBystartDateTimeBetween(fromDate, toDate, pageable);
+			if (statusNullCheck) {
+				events = eventRepository.
+						findBystartDateTimeBetweenAndlastStatusNull
+						(fromDate, toDate, pageable);
+				}
+			else if (eventStatus != null) {
+				events = eventRepository.
+						findByStartDateTimeBetweenAndLastStatus
+						(fromDate, toDate, eventStatus, pageable);
+			}
+			else {
+				events = eventRepository.
+						findBystartDateTimeBetween(fromDate, toDate, pageable);
+			}
 		}
 		
 		//Option: 4
-		else {
-			events = eventRepository.findAll(pageable);
+		else if (eventTypes.size() < 1 && fromDate == null && toDate == null) {
+			if (statusNullCheck) {
+				events = eventRepository.findBylastStatusNull(pageable);
+				}
+			else if (eventStatus != null) {
+				events = eventRepository.findBylastStatus(eventStatus, pageable);
+			}
+			else {
+				events = eventRepository.findAll(pageable);
+			}
 		}
+		
 		return events;
 	}
 	
-	
+		
 	@GetMapping("/all-event-types")
 	public List<Eventtype> getEventTypes(){
 		List<Eventtype> allEventTypes = eventTypeRepository.findAll();
