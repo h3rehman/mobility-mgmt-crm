@@ -102,7 +102,7 @@ public class EventJpaTests {
 		eventTypes.add(eventType);
 		
 		Page<Event> eventsJPA = eventRepository.
-		findBystartDateTimeBetweenAndeventTypeIn(fromDate, toDate, eventTypes, pageable);
+		findByStartDateTimeBetweenAndEventTypeIn(fromDate, toDate, eventTypes, pageable);
 		
 		assertEquals(eventsJPA.getTotalElements(), 5);
 		

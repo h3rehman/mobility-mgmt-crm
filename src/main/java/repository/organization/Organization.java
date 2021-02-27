@@ -58,6 +58,9 @@ public class Organization {
 	@JsonView(View.OrgDetail.class)
 	String zip;
 	
+	@Column(name = "laststatusdate", columnDefinition = "TIMESTAMP")
+	private LocalDateTime lastContact;
+	
 	@ManyToOne
 	@JoinColumn(name = "laststatusID")
 	Status lastStatus;
@@ -188,5 +191,11 @@ public class Organization {
 	}
 	public void setLastStatus(Status lastStatus) {
 		this.lastStatus = lastStatus;
+	}
+	public LocalDateTime getLastContact() {
+		return lastContact;
+	}
+	public void setLastContact(LocalDateTime lastContact) {
+		this.lastContact = lastContact;
 	}
 }

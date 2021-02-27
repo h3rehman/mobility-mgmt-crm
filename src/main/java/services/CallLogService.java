@@ -84,6 +84,7 @@ public class CallLogService {
 						if (optionalStatus != null) {
 							Status lastStatus = optionalStatus.get();
 							org.setLastStatus(lastStatus);
+							org.setLastContact(currentTime);
 							orgRepository.save(org);
 						}
 					}

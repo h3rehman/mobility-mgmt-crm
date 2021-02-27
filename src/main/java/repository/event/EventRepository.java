@@ -18,27 +18,30 @@ public interface EventRepository extends JpaRepository<Event, Long>{
 	@Query("SELECT e from Event e WHERE e.startDateTime >= ?1")
 	List<Event> findByDate(LocalDateTime dateTime);
 
-	@Query("SELECT e from Event e WHERE e.startDateTime between ?1 and ?2")
-	Page<Event> findBystartDateTimeBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
+	//@Query("SELECT e from Event e WHERE e.startDateTime between ?1 and ?2")
+	Page<Event> findByStartDateTimeBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
 	
 	Page<Event> findAllByeventTypeIn(List<Eventtype> eventTypes, Pageable pageable);
 	
-	Page<Event> findByeventTypeIn(List<Eventtype> eventTypes, Pageable pageable);
+	Page<Event> findByEventTypeIn(List<Eventtype> eventTypes, Pageable pageable);
 	
 	Page<Event> findByEventTypeInAndLastStatusIsNull(List<Eventtype> eventTypes, Pageable pageable);
 	
-	Page<Event> findByEventTypeInAndLastStatus(List<Eventtype> eventTypes, Status lastStaus, 
-			Pageable pageable);
+	Page<Event> findByEventTypeInAndLastStatusIn(List<Eventtype> eventTypes, 
+			List<Status> lastStauses, Pageable pageable);
 	
-	Page<Event> findBylastStatus(Status eventStatus, Pageable pageable);
+	Page<Event> findByLastStatusIn(List<Status> eventStatuses, Pageable pageable);
 
 	@Query("SELECT e from Event e WHERE e.lastStatus is null")
 	Page<Event> findBylastStatusNull(Pageable pageable);
 	
-	@Query("SELECT e from Event e WHERE e.startDateTime between ?1 and ?2 AND e.eventType IN ?3")
-	Page<Event> findBystartDateTimeBetweenAndeventTypeIn(LocalDateTime from, LocalDateTime to, 
+//	@Query("SELECT e from Event e WHERE e.startDateTime between ?1 and ?2 AND e.eventType IN ?3")
+	Page<Event> findByStartDateTimeBetweenAndEventTypeIn(LocalDateTime from, LocalDateTime to, 
 			List<Eventtype> eventTypes, Pageable pageable);
 	
+	Page<Event> findByStartDateTimeBetweenAndEventTypeInAndLastStatusIn(LocalDateTime from, LocalDateTime to, 
+			List<Eventtype> eventTypes, List<Status> lastStatuses, Pageable pageable);
+		
 	@Query("SELECT e from Event e WHERE e.startDateTime between ?1 and ?2 "
 		 + "AND e.eventType IN ?3 AND e.lastStatus = ?4")
 	Page<Event> findBystartDateTimeBetweenAndeventTypeInAndlastStatus(LocalDateTime from, LocalDateTime to, 
@@ -57,8 +60,8 @@ public interface EventRepository extends JpaRepository<Event, Long>{
 	Page<Event> findBystartDateTimeBetweenAndlastStatusNull
 	(LocalDateTime from, LocalDateTime to, Pageable pageable);
 	
-	Page<Event> findByStartDateTimeBetweenAndLastStatus
-	(LocalDateTime from, LocalDateTime to, Status lastStaus, Pageable pageable);
+	Page<Event> findByStartDateTimeBetweenAndLastStatusIn
+	(LocalDateTime from, LocalDateTime to, List<Status> lastStauses, Pageable pageable);
 	
 }
  

@@ -174,7 +174,7 @@ public class EventControllers {
 			@PathVariable Integer pageElements, @PathVariable String fieldName, 
 			@PathVariable String sortOrder, @PathVariable String from, @PathVariable String to, 
 			@RequestParam(value="eveType", required=false) String [] eveTypes,
-			@RequestParam(value="eveStatus", required=false) String eveStatus){
+			@RequestParam(value="eveStatus", required=false) String[] eveStatuses){
 		
 		Page<Event> events = null;
 		Pageable pageable = null;
@@ -203,16 +203,12 @@ public class EventControllers {
 			}
 		}
 		
-		boolean statusNullCheck = false;
-		Status eventStatus = null;
-		if (eveStatus != null) {
-			if (eveStatus.equalsIgnoreCase("null")) {
-				statusNullCheck = true;
-			}
-			else {
-				Status eventStatusCheck = statusRepository.findBystatusDesc(eveStatus);
-				if (eventStatusCheck != null) {
-					eventStatus = eventStatusCheck;
+		List<Status> eventStatuses = new ArrayList<Status>();
+		if (eveStatuses != null) {
+			for (int i=0; i<eveStatuses.length; i++) {
+				Status status = statusRepository.findBystatusDesc(eveStatuses[i]);
+				if (status != null) {
+					eventStatuses.add(status);
 				}
 			}
 		}
@@ -226,70 +222,55 @@ public class EventControllers {
 		//Option: 1	
 		if (eventTypes.size() > 0 && fromDate != null && toDate != null) {
 			
-			if (statusNullCheck) {
+			if (eventStatuses.size() < 1) {
 				events = eventRepository.
-						findByStartDateTimeBetweenAndEventTypeInAndLastStatusIsNull
+						findByStartDateTimeBetweenAndEventTypeIn
 						(fromDate, toDate, eventTypes, pageable);
-			}
-			else if (eventStatus != null) {
-				events = eventRepository.
-						findBystartDateTimeBetweenAndeventTypeInAndlastStatus
-						(fromDate, toDate, eventTypes, eventStatus, pageable);
 			}
 			else {
 				events = eventRepository.
-						findBystartDateTimeBetweenAndeventTypeIn
-						(fromDate, toDate, eventTypes, pageable);
+						findByStartDateTimeBetweenAndEventTypeInAndLastStatusIn
+						(fromDate, toDate, eventTypes, eventStatuses, pageable);
 			}
 		}
 		
 		//Option: 2
 		else if(eventTypes.size() > 0 && fromDate == null && toDate == null) {
 			
-			if (statusNullCheck) {
+			if (eventStatuses.size() < 1) {
 				events = eventRepository.
-						findByEventTypeInAndLastStatusIsNull
-						(eventTypes, pageable);
-			}
-			else if (eventStatus != null) {
-				events = eventRepository.
-						findByEventTypeInAndLastStatus
-						(eventTypes, eventStatus, pageable);
+						findByEventTypeIn(eventTypes, pageable);
 			}
 			else {
-				events = eventRepository.findAllByeventTypeIn(eventTypes, pageable);
+				events = eventRepository.
+						findByEventTypeInAndLastStatusIn
+						(eventTypes, eventStatuses, pageable);
 			}
 		}
 		
 		//Option: 3
 		else if (fromDate != null && toDate != null && eventTypes.size() < 1) {
-			if (statusNullCheck) {
+			if (eventStatuses.size() < 1) {
 				events = eventRepository.
-						findBystartDateTimeBetweenAndlastStatusNull
+						findByStartDateTimeBetween
 						(fromDate, toDate, pageable);
 				}
-			else if (eventStatus != null) {
+			else  {
 				events = eventRepository.
-						findByStartDateTimeBetweenAndLastStatus
-						(fromDate, toDate, eventStatus, pageable);
-			}
-			else {
-				events = eventRepository.
-						findBystartDateTimeBetween(fromDate, toDate, pageable);
+						findByStartDateTimeBetweenAndLastStatusIn
+						(fromDate, toDate, eventStatuses, pageable);
 			}
 		}
 		
 		//Option: 4
 		else if (eventTypes.size() < 1 && fromDate == null && toDate == null) {
-			if (statusNullCheck) {
-				events = eventRepository.findBylastStatusNull(pageable);
-				}
-			else if (eventStatus != null) {
-				events = eventRepository.findBylastStatus(eventStatus, pageable);
-			}
-			else {
+			if (eventStatuses.size() < 1) {
 				events = eventRepository.findAll(pageable);
+				}
+			else {
+				events = eventRepository.findByLastStatusIn(eventStatuses, pageable);
 			}
+	
 		}
 		
 		return events;
