@@ -38,7 +38,7 @@ public class StatusControllers {
 	
 	@GetMapping("/eventStatusTypes")
 	List<Map<String, Object>> getEventStatusTypes () {
-		String sql = "SELECT statusdesc "
+		String sql = "SELECT StatusID as statusId, statusdesc "
 				   + "FROM Status "
 				   + "WHERE statustype = ?";
 		String eveType = "E";
