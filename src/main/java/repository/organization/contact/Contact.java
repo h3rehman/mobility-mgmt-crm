@@ -1,5 +1,7 @@
 package repository.organization.contact;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -10,12 +12,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
+import repository.event.presenter.Presenter;
 import repository.organization.View;
 
 @Entity
@@ -44,10 +48,23 @@ public class Contact {
 	@JsonView(View.OrgDetail.class)
 	@Column(name="altphone")
 	String altPhone;
+	
+	@Column(name = "createddate", columnDefinition = "TIMESTAMP")
+	private LocalDateTime createDate;
+	
+	@Column(name = "lastmodifieddate", columnDefinition = "TIMESTAMP")
+	private LocalDateTime lastModifiedDate;
+	
+	@ManyToOne
+	@JoinColumn(name = "createdby")
+	Presenter createdBy;
+	
+	@ManyToOne
+	@JoinColumn(name = "lastmodifiedby")
+	Presenter lastModifiedBy;
 
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name="ContactID")
-	@JsonIgnore
 	List<OrganizationContact> contactOrgs;
 	
 	//Empty contructor for JPA
@@ -101,9 +118,15 @@ public class Contact {
 		this.contactId = contactId;
 	}
 
-	public List<OrganizationContact> getContactOrgs() {
-		return contactOrgs;
+
+	public HashMap<Long, String> getContactOrgs() {
+		HashMap<Long, String> orgs = new HashMap<Long, String>();
+		for (OrganizationContact contactOrg : contactOrgs) {
+			orgs.put(contactOrg.getOrganization().getOrgId(), contactOrg.getOrganization().getOrgname());
+		}
+		return orgs;
 	}
+
 
 	public void setContactOrgs(List<OrganizationContact> customerContacts) {
 		this.contactOrgs = customerContacts;
@@ -115,6 +138,44 @@ public class Contact {
 
 	public void setAltPhone(String altPhone) {
 		this.altPhone = altPhone;
+	}
+
+	public LocalDateTime getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(LocalDateTime createDate) {
+		this.createDate = createDate;
+	}
+
+	public LocalDateTime getLastModifiedDate() {
+		return lastModifiedDate;
+	}
+
+	public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
+		this.lastModifiedDate = lastModifiedDate;
+	}
+
+	public String getCreatedBy() {
+		if (createdBy != null) {
+			return createdBy.getName() + " " + createdBy.getLastName();
+		}
+		return null;
+	}
+
+	public void setCreatedBy(Presenter createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getLastModifiedBy() {
+		if (lastModifiedBy != null) {
+			return lastModifiedBy.getName() + " " + lastModifiedBy.getLastName();
+		}
+		return null;
+	}
+
+	public void setLastModifiedBy(Presenter lastModifiedBy) {
+		this.lastModifiedBy = lastModifiedBy;
 	}
 		
 }

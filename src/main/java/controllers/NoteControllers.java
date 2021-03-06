@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import repository.event.Event;
+import repository.event.EventRepository;
 import repository.event.presenter.Presenter;
 import repository.note.Note;
 import repository.note.NoteRepository;
@@ -39,6 +41,9 @@ public class NoteControllers {
 	
 	@Autowired
 	OrganizationRepository orgRepository;
+	
+	@Autowired
+	EventRepository eventRepository;
 	
 	@Autowired
 	NoteService noteService;
@@ -87,6 +92,17 @@ public class NoteControllers {
 		return jdbcTemplate.queryForList(sql, orgId);	
 	}
 	
+	@GetMapping("/event/notes/{eventId}")
+	List<Note> getEventNotes(@PathVariable Long eventId){
+		
+		Optional<Event> optionalEvent = eventRepository.findById(eventId);
+		if (optionalEvent != null) {
+			Event event = optionalEvent.get();
+			return noteRepository.findByEvent(event);
+		}
+		return null;
+	}
+	
 	@PostMapping("/org/newNote/{orgId}")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> createOrgNote (@RequestBody Note note, @PathVariable Long orgId, 
@@ -94,7 +110,6 @@ public class NoteControllers {
 		Long presenterId = null;
 		if (user != null) {
 			presenterId = user.getPresenterId();
-			System.out.println("### Presenter Id: " + presenterId);
 			noteService.addNote(note, orgId, presenterId, null);
 			// Build the location URI of the new item
 			URI location = ServletUriComponentsBuilder
@@ -110,6 +125,29 @@ public class NoteControllers {
 		}
 	}
 	
+	@PostMapping("/event/newNote/{eventId}")
+	@ResponseStatus(HttpStatus.CREATED)
+	public ResponseEntity<Void> createEventNote (@RequestBody Note note, @PathVariable Long eventId, 
+			@AuthenticationPrincipal Presenter user){
+		Long presenterId = null;
+		if (user != null) {
+			presenterId = user.getPresenterId();
+			noteService.addNote(note, null, presenterId, eventId);
+			// Build the location URI of the new item
+			URI location = ServletUriComponentsBuilder
+					.fromCurrentRequestUri()
+					.path("/{noteId}")
+					.buildAndExpand(note.getNoteId())
+					.toUri(); 	
+			// Explicitly create a 201 Created response
+			return ResponseEntity.created(location).build();				
+		}
+		else {
+			return null;
+		}
+	}
+
+	//For both Organization and Event notes
 	@PutMapping("/editNote/{noteId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
 	public void updateNote (@RequestBody Note note, @PathVariable Long noteId, 
