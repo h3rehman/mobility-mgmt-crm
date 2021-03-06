@@ -1,6 +1,8 @@
 
 package services;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import repository.event.presenter.Presenter;
 import repository.organization.Organization;
 import repository.organization.OrganizationRepository;
 import repository.organization.contact.Contact;
@@ -100,7 +103,7 @@ public class OrganizationService {
 			
 	}
 
-	public void updateContact(Contact con) {
+	public void updateContact(Contact con, Presenter user) {
 		Optional<Contact> optionalCon = contactRepository.findById(con.getContactId());
 		
 		if (optionalCon != null) {
@@ -109,11 +112,18 @@ public class OrganizationService {
 			originalCon.setLastName(con.getLastName());
 			originalCon.setTitle(con.getTitle());
 			originalCon.setPhone(con.getPhone());
+			originalCon.setAltPhone(con.getAltPhone());
 			originalCon.setEmail(con.getEmail());
+			originalCon.setLastModifiedBy(user);
+		
+			ZoneId central = ZoneId.of("America/Chicago");
+			LocalDateTime currentTime = LocalDateTime.now(central);
+
+			originalCon.setLastModifiedDate(currentTime);
 			contactRepository.save(originalCon);
 		}
 		else {
-			System.out.println("Contact Returned is Null");
+			System.out.println("Contact Returned is Null.. cannot update Contact.");
 		}	
 	}
 
@@ -122,9 +132,18 @@ public class OrganizationService {
 		return optionalContact.orElseThrow(() -> new ClassNotFoundException("No Contact exist with the id: " + id));
 	}
 
-	public void associateContact(Contact con, String orgId) {
+	public void associateContact(Contact con, String orgId, Presenter user) {
+		con.setCreatedBy(user);
+		con.setLastModifiedBy(user);
+		
+		ZoneId central = ZoneId.of("America/Chicago");
+		LocalDateTime currentTime = LocalDateTime.now(central);
+		con.setCreateDate(currentTime);
+		con.setLastModifiedDate(currentTime);
+		
+		contactRepository.save(con); 
+		
 		Long oId = Long.parseLong(orgId);
-		contactRepository.save(con);
 		Optional<Organization> org = orgRepository.findById(oId);
 		
 		if (org != null) {

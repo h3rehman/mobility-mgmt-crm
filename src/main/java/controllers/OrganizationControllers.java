@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +44,7 @@ import repository.status.StatusRepository;
 import services.OrganizationService;
 import repository.event.Event;
 import repository.event.Eventtype;
+import repository.event.presenter.Presenter;
 import repository.organization.Organization;
 import repository.organization.OrganizationRepository;
 
@@ -266,9 +268,11 @@ public class OrganizationControllers {
 
 	@PutMapping("/contact")
 	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
-	public void updateContact(@RequestBody Contact con) {
-		orgService.updateContact(con);
-		
+	public void updateContact(@RequestBody Contact con, @AuthenticationPrincipal Presenter user) {
+		if (user != null) {
+			orgService.updateContact(con, user);
+		}
+		System.out.println("User identity cannot be confirmed... Cannot update contact.");
 	}
 
 	@DeleteMapping("/orgContact/{orgId}/{contactId}")
@@ -282,19 +286,23 @@ public class OrganizationControllers {
 	
 	@PostMapping("/orgContact/{orgId}") 
 	@ResponseStatus(HttpStatus.CREATED) // 201
-	public ResponseEntity<Void> createContact(@RequestBody Contact con, @PathVariable String orgId){ 
-		
-		orgService.associateContact(con, orgId);
-		
-		// Build the location URI of the new item
-		 URI location = ServletUriComponentsBuilder
-		 .fromCurrentRequestUri()
-		 .path("/{contactId}")
-		 .buildAndExpand(con.getContactId())
-		 .toUri(); 
-
-		// Explicitly create a 201 Created response
-		 return ResponseEntity.created(location).build();	
+	public ResponseEntity<Void> createContact(@RequestBody Contact con, @PathVariable String orgId,
+			@AuthenticationPrincipal Presenter user){ 
+		if (user != null) {
+			orgService.associateContact(con, orgId, user);
+			
+			// Build the location URI of the new item
+			URI location = ServletUriComponentsBuilder
+					.fromCurrentRequestUri()
+					.path("/{contactId}")
+					.buildAndExpand(con.getContactId())
+					.toUri(); 
+			
+			// Explicitly create a 201 Created response
+			return ResponseEntity.created(location).build();	
+		}
+		System.out.println("Returned null Presenter.. No Contact created.");
+		return null;
 	}
 	
 	@GetMapping("/allorgnames")
