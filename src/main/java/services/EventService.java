@@ -104,7 +104,7 @@ public class EventService {
 				eve.setLastStatus(status);
 			}
 			else {
-				Optional<Status> optionalStatus = statusRepository.findById(11L);
+				Optional<Status> optionalStatus = statusRepository.findById(8L);//Id for Info Needed Status
 				if (optionalStatus != null) {
 					status = optionalStatus.get();
 					eve.setLastStatus(status);
@@ -112,7 +112,7 @@ public class EventService {
 			}
 		}
 		else {
-			Optional<Status> optionalStatus = statusRepository.findById(11L); //Id for Info Needed 
+			Optional<Status> optionalStatus = statusRepository.findById(8L); //Id for Info Needed Status
 			if (optionalStatus != null) {
 				status = optionalStatus.get();
 				eve.setLastStatus(status);
@@ -139,9 +139,6 @@ public class EventService {
 				
 				org.setLastStatus(status);
 				orgRepository.save(org);
-		
-	System.out.println("##### NEW EVENT CREATED, Event ID: " + eve.getEventId() + 
-			" " + "associated Org Id: " + org.getOrgId());
 			}
 		}
 		

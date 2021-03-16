@@ -63,6 +63,7 @@ public class Organization {
 	
 	@ManyToOne
 	@JoinColumn(name = "laststatusID")
+	@JsonView(View.OrgDetail.class)
 	Status lastStatus;
 	
 	@OneToMany(cascade=CascadeType.ALL)
