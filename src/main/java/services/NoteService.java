@@ -40,7 +40,6 @@ public class NoteService {
 	}
 	
 	public void addNote(Note note, Long orgId, Long presenterId, Long eventId) {
-		System.out.println("Finding OrgId: " + orgId);
 		ZoneId central = ZoneId.of("America/Chicago");
 		note.setCreateDate(LocalDateTime.now(central));
 		note.setLastModifiedDate(LocalDateTime.now(central));

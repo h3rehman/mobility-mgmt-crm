@@ -13,6 +13,8 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import repository.calllog.CallLog;
+
 @Entity
 @Table(name = "Presenter")
 public class Presenter {

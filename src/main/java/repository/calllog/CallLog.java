@@ -100,10 +100,15 @@ public class CallLog {
 	}
 
 	public Map<String, String> getStatus() {
-		Map<String, String> statusDetail = new HashMap<String, String>();
-		statusDetail.put("lastStatusId", status.getStatusId().toString());
-		statusDetail.put("lastStatus", status.getStatusDesc());
-		return statusDetail;
+		if (status != null) {
+			Map<String, String> statusDetail = new HashMap<String, String>();
+			statusDetail.put("lastStatusId", status.getStatusId().toString());
+			statusDetail.put("lastStatus", status.getStatusDesc());
+			return statusDetail;
+		}
+		else {
+			return null;
+		}
 	}
 
 	public void setStatus(Status newStatus) {
