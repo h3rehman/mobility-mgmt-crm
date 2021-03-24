@@ -14,6 +14,10 @@ buildNumber.properties
 ### Local Config ###
 *.yml
 src/main/resources/onelogin/*
+*.jks
+*.pfx
+*.crt
+*.p12
 
 ### STS ###
 .apt_generated
