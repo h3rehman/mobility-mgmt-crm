@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
 import repository.event.Event;
@@ -32,6 +34,8 @@ import repository.organization.Organization;
 import repository.organization.OrganizationRepository;
 import repository.status.Status;
 import repository.status.StatusRepository;
+import services.calendar.CalendarRequest;
+import services.calendar.CalendarService;
 
 @Service
 public class EventService {
@@ -62,6 +66,15 @@ public class EventService {
 	
 	@Autowired
 	StatusRepository statusRepository;
+	
+	@Autowired
+	CalendarService calendarService;
+	
+//	@Autowired
+//	CalendarRequest calendarRequest;
+	
+	@Autowired
+	JavaMailSenderImpl mailSender;
 	
 	public List<Event> getAllEvents(){
 		return eventRepository.findAll();
@@ -243,6 +256,28 @@ public class EventService {
 				eventAudienceTypeRepository.save(eveAud);
 			}
 		}
+	}
+	
+	public void sendEventInvite(String subject, String emailBody, String toEmail, String eventLocation) throws Exception {
+		    mailSender.setUsername("mmoutreach");
+		    mailSender.setPassword("M0b1liTym@n");
+		    Properties properties = new Properties();
+		    properties.put("mail.smtp.auth", "true");
+		    properties.put("mail.smtp.starttls.enable", "true");
+		    properties.put("mail.smtp.host", "172.16.0.163");
+		    properties.put("mail.smtp.port", "587");
+		    mailSender.setJavaMailProperties(properties);
+		    calendarService.sendCalendarInvite(
+		            "mmoutreach@rtachicago.org",
+		            new CalendarRequest.Builder()
+		                    .withSubject(subject)
+		                    .withBody(emailBody)
+		                    .withToEmail(toEmail)
+		                    .withMeetingStartTime(LocalDateTime.now())
+		                    .withMeetingEndTime(LocalDateTime.now().plusHours(1))
+		                    .withLocation(eventLocation)
+		                    .build()
+		    );
 	}
 	
 }

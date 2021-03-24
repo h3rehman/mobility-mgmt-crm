@@ -1,7 +1,12 @@
 package config;
 
+import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.HttpClients;
 
 import static org.springframework.security.extensions.saml2.config.SAMLConfigurer.saml;
 
@@ -26,6 +31,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.Resource;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -35,6 +42,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SimpleSavedRequest;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -58,7 +66,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	  private String spHost;
 
 	  @Value("${onelogin.sp.path}")
-	  private String spBashPath;
+	  private String spBasePath;
 
 	  @Value("${onelogin.sp.key-store.file}")
 	  private String keyStoreFile;
@@ -80,6 +88,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
 	  @Autowired
 	  SAMLUserService samlUserService;
+
+	  @Value("${trust.store}")
+	  private Resource trustStore;
+
+	  @Value("${trust.store.password}")
+	  private String trustStorePassword;
 	
 		
 //	//These URLs pass straight through, no checks
@@ -158,7 +172,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	    	        .serviceProvider()
 	    	          .protocol(spProtocol)
 	    	          .hostname(spHost)
-	    	          .basePath(spBashPath)
+	    	          .basePath(spBasePath)
 	    	          .keyStore()
 	    	            .storeFilePath(keyStoreFile)
 	    	            .keyPassword(keyStorePassword)
@@ -203,4 +217,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	        };
 	    }
 	 
+
+	    @Bean
+	    RestTemplate restTemplate() throws Exception {
+	        SSLContext sslContext = new SSLContextBuilder()
+	                .loadTrustMaterial(
+	                        trustStore.getURL(),
+	                        trustStorePassword.toCharArray()
+	                ).build();
+        SSLConnectionSocketFactory socketFactory =  new SSLConnectionSocketFactory(sslContext);
+        HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
+        System.out.println("######### Custom Rest Template active ###########");
+	        return new RestTemplate(factory);
+	    }
+	 
+		 
 }

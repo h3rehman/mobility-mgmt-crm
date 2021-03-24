@@ -276,6 +276,12 @@ public class EventControllers {
 		return events;
 	}
 	
+	@GetMapping("/send-invite/{subject}/{emailBody}/{toEmail}/{eventLocation}")
+	public void createEventInvite(@PathVariable String subject, @PathVariable String emailBody, 
+			@PathVariable String toEmail, @PathVariable String eventLocation) throws Exception {
+		eventService.sendEventInvite(subject, emailBody, toEmail, eventLocation);
+	}
+	
 		
 	@GetMapping("/all-event-types")
 	public List<Eventtype> getEventTypes(){
