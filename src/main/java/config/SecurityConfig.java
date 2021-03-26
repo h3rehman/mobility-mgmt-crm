@@ -22,7 +22,9 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.JarFile;
 
@@ -44,6 +46,7 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SimpleSavedRequest;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
@@ -189,20 +192,39 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	    	    .and();
 	    }
 	
-	 @Bean
-	 public CorsFilter corsFilter() {
-	   UrlBasedCorsConfigurationSource source = new 
-	   UrlBasedCorsConfigurationSource();
-	   CorsConfiguration config = new CorsConfiguration();
-	   config.setAllowCredentials(true);
-	   config.addAllowedOrigin("*");
-	   config.addAllowedHeader("*");
-	   config.addAllowedMethod("*");
-	   source.registerCorsConfiguration("/**", config);
-	   return new CorsFilter(source);
-	 }
+//	 @Bean
+//	 public CorsFilter corsFilter() {
+//	   UrlBasedCorsConfigurationSource source = new 
+//	   UrlBasedCorsConfigurationSource();
+//	   CorsConfiguration config = new CorsConfiguration();
+//	   config.setAllowCredentials(true);
+//	   config.addAllowedOrigin("*");
+//	   config.addAllowedHeader("*");
+//	   config.addAllowedMethod("*");
+//	   config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost", "https://rtachicago.onelogin.com"));
+//	   config.setAllowedHeaders(Arrays.asList("Origin", "Authorization", "Host", "Proxy-Authorization", "Cache-Control", "Content-Type"));
+//	   config.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "OPTIONS"));
+//	   config.setExposedHeaders(Arrays.asList("Location"));
+//	   source.registerCorsConfiguration("/**", config);
+//	   return new CorsFilter(source);
+//	 }
 	 
-	 //For Dev Environment:
+	 @Bean
+	 public CorsConfigurationSource corsConfigurationSource() {
+			CorsConfiguration config = new CorsConfiguration();
+			config.setAllowCredentials(true);
+			config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost", "https://rtachicago.onelogin.com", "https://stagemmoutreach.rtachicago.org",
+					"http://localhost:3000/*", "https://mmoutreach.rtachicago.org"));
+			config.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "OPTIONS"));
+			config.setAllowedHeaders(Arrays.asList("*"));
+//			config.setAllowedHeaders(Arrays.asList("Origin", "Authorization", "Accept","Host", "Proxy-Authorization", "Content-Type", "Location", "x-xsrf-token", "x-csrf-token"));
+			config.setExposedHeaders(Arrays.asList("Location"));
+			UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+			source.registerCorsConfiguration("/**", config);
+			return source;
+		}
+	 
+	 //For pointing back to React app after authentication
 	 @Bean
 	 @Profile("dev")
 	 public RequestCache refererRequestCache() {
@@ -231,6 +253,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
         System.out.println("######### Custom Rest Template active ###########");
 	        return new RestTemplate(factory);
 	    }
-	 
-		 
+	    
 }
