@@ -97,6 +97,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
 	  @Value("${trust.store.password}")
 	  private String trustStorePassword;
+	  
+	  @Value("${allowedOrigins}")
+	  private List<String> allowedOrigins;
 	
 		
 //	//These URLs pass straight through, no checks
@@ -213,8 +216,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	 public CorsConfigurationSource corsConfigurationSource() {
 			CorsConfiguration config = new CorsConfiguration();
 			config.setAllowCredentials(true);
-			config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost", "https://rtachicago.onelogin.com", "https://stagemmoutreach.rtachicago.org",
-					"http://localhost:3000/*", "https://mmoutreach.rtachicago.org"));
+			config.setAllowedOrigins(allowedOrigins);
 			config.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "OPTIONS"));
 			config.setAllowedHeaders(Arrays.asList("*"));
 //			config.setAllowedHeaders(Arrays.asList("Origin", "Authorization", "Accept","Host", "Proxy-Authorization", "Content-Type", "Location", "x-xsrf-token", "x-csrf-token"));
