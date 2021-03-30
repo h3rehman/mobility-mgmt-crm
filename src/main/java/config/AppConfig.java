@@ -67,6 +67,10 @@ public class AppConfig implements WebMvcConfigurer {
 		return new JavaMailSenderImpl();
 	}
 	
+	@Bean
+	public MailConfig mailConfig() {
+		return new MailConfig();
+	}
 		
 //	@Bean
 //	 public DataSource dataSource(
