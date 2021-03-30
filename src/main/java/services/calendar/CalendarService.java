@@ -1,6 +1,9 @@
 package services.calendar;
 
 import org.springframework.stereotype.Service;
+
+import config.MailConfig;
+
 import org.joda.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -19,6 +22,9 @@ public class CalendarService {
 	
 	private JavaMailSender mailSender;
 	
+	@Autowired
+	MailConfig mailConfig;
+	
 	  @Autowired
 	  public CalendarService(JavaMailSender mailSender) {
 	        this.mailSender = mailSender;
@@ -36,17 +42,17 @@ public class CalendarService {
 	        StringBuilder builder = new StringBuilder();
 	        builder.append("BEGIN:VCALENDAR\n" +
 	                "METHOD:REQUEST\n" +
-	                "PRODID:Microsoft Exchange Server 2016\n" +
+	                "PRODID:" + mailConfig.getExchangeServerVersion() +"\n" +
 	                "VERSION:2.0\n" +
 	                "BEGIN:VTIMEZONE\n" +
 	                "TZID:America/Chicago\n" +
 	                "END:VTIMEZONE\n" +
 	                "BEGIN:VEVENT\n" +
 	                "ATTENDEE;ROLE=REQ-PARTICIPANT;RSVP=TRUE:MAILTO:" + calendarRequest.getToEmail() + "\n" +
-	                "ORGANIZER;CN=Foo:MAILTO:" + fromEmail + "\n" +
+	                "ORGANIZER;CN=" + mailConfig.getFromEmailName() + ":MAILTO:" + fromEmail + "\n" +
 	                "DESCRIPTION;LANGUAGE=en-US:" + calendarRequest.getBody() + "\n" +
 	                "UID:"+calendarRequest.getUid()+"\n" +
-	                "SUMMARY;LANGUAGE=en-US:Discussion\n" +
+	                "SUMMARY;LANGUAGE=en-US:" + calendarRequest.getSubject() + "\n" +
 	                "DTSTART:" + formatter.format(calendarRequest.getMeetingStartTime()).replace(" ", "T") + "\n" +
 	                "DTEND:" + formatter.format(calendarRequest.getMeetingEndTime()).replace(" ", "T") + "\n" +
 	                "CLASS:PUBLIC\n" +

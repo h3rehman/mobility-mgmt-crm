@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
+import config.MailConfig;
 import repository.event.Event;
 import repository.event.EventRepository;
 import repository.event.Eventtype;
@@ -69,6 +70,9 @@ public class EventService {
 	
 	@Autowired
 	CalendarService calendarService;
+	
+	@Autowired
+	MailConfig mailConfig;
 	
 //	@Autowired
 //	CalendarRequest calendarRequest;
@@ -259,13 +263,14 @@ public class EventService {
 	}
 	
 	public void sendEventInvite(String subject, String emailBody, String toEmail, String eventLocation) throws Exception {
-		    mailSender.setUsername("mmoutreach");
-		    mailSender.setPassword("M0b1liTym@n");
+		    mailSender.setUsername(mailConfig.getUsername());
+		    mailSender.setPassword(mailConfig.getPassword());
 		    Properties properties = new Properties();
-		    properties.put("mail.smtp.auth", "true");
-		    properties.put("mail.smtp.starttls.enable", "true");
-		    properties.put("mail.smtp.host", "172.16.0.163");
-		    properties.put("mail.smtp.port", "587");
+		    properties.put("mail.smtp.auth", mailConfig.getSmtpAuthRequire());
+		    properties.put("mail.smtp.starttls.enable", mailConfig.getSmtpTLSRequire());
+		    properties.put("mail.smtp.ssl.trust", mailConfig.getExchangeServer());
+		    properties.put("mail.smtp.host", mailConfig.getExchangeServer());
+		    properties.put("mail.smtp.port", mailConfig.getSmtpPort());
 		    mailSender.setJavaMailProperties(properties);
 		    calendarService.sendCalendarInvite(
 		            "mmoutreach@rtachicago.org",

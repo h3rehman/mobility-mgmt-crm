@@ -279,6 +279,9 @@ public class EventControllers {
 	@GetMapping("/send-invite/{subject}/{emailBody}/{toEmail}/{eventLocation}")
 	public void createEventInvite(@PathVariable String subject, @PathVariable String emailBody, 
 			@PathVariable String toEmail, @PathVariable String eventLocation) throws Exception {
+		if (subject == null) {
+			subject = eventLocation;
+		}
 		eventService.sendEventInvite(subject, emailBody, toEmail, eventLocation);
 	}
 	

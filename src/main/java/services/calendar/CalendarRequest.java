@@ -22,7 +22,7 @@ public class CalendarRequest {
         meetingStartTime = builder.meetingStartTime;
         meetingEndTime = builder.meetingEndTime;
         location = builder.location;
-    }
+   }
  
  
     public String getUid() {
@@ -52,6 +52,7 @@ public class CalendarRequest {
     public String getLocation() {
     	return location;
     }
+    
  
     public static final class Builder {
         private String toEmail;
@@ -93,7 +94,7 @@ public class CalendarRequest {
         	location = val;
         	return this;
         }
- 
+        
         public CalendarRequest build() {
             return new CalendarRequest(this);
         }
