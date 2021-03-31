@@ -262,7 +262,9 @@ public class EventService {
 		}
 	}
 	
-	public void sendEventInvite(String subject, String emailBody, String toEmail, String eventLocation) throws Exception {
+	public void sendEventInvite(String subject, String message, Long[] presenterIds, String eventLocation, 
+			Long eventId, Presenter sender) throws Exception {
+		
 		    mailSender.setUsername(mailConfig.getUsername());
 		    mailSender.setPassword(mailConfig.getPassword());
 		    Properties properties = new Properties();
@@ -272,17 +274,46 @@ public class EventService {
 		    properties.put("mail.smtp.host", mailConfig.getExchangeServer());
 		    properties.put("mail.smtp.port", mailConfig.getSmtpPort());
 		    mailSender.setJavaMailProperties(properties);
-		    calendarService.sendCalendarInvite(
-		            "mmoutreach@rtachicago.org",
-		            new CalendarRequest.Builder()
-		                    .withSubject(subject)
-		                    .withBody(emailBody)
-		                    .withToEmail(toEmail)
-		                    .withMeetingStartTime(LocalDateTime.now())
-		                    .withMeetingEndTime(LocalDateTime.now().plusHours(1))
-		                    .withLocation(eventLocation)
-		                    .build()
-		    );
+		    
+		    String emailBody = "Sender: " + sender.getName() + " " + sender.getLastName() + "\n "+
+		    					" Note from Sender: " + message;
+		    
+			Optional<Event> optionalEvent = eventRepository.findById(eventId);
+			
+			if (optionalEvent != null) {
+				Event event = optionalEvent.get();
+				for (int i=0; i<presenterIds.length; i++) {
+				
+					Optional<Presenter> optionalPresenter = presenterRepository.findById(presenterIds[i]);
+					if (optionalPresenter != null) {
+						
+						Presenter presenter = optionalPresenter.get();
+						Eventpresenter evePresenter = eventPresenterRepository.findByEventAndPresenter(event, presenter);
+						if (evePresenter == null) {
+							Eventpresenter evePres = new Eventpresenter();
+							evePres.setEvent(event);
+							evePres.setPresenter(presenter);
+							eventPresenterRepository.save(evePres);
+							System.out.println("#### Added new Event Presenter ####: " + presenter.getName());
+						}
+						else { 
+							System.out.println("#### Event Presenter already exist: " + presenter.getName());
+						}
+						calendarService.sendCalendarInvite(
+								mailConfig.getFromEmail(),
+								new CalendarRequest.Builder()
+								.withSubject(subject)
+								.withBody(emailBody)
+								.withToEmail(presenter.getEmail())
+								.withMeetingStartTime(event.getStartDateTime())
+								.withMeetingEndTime(event.getEndDateTime())
+								.withLocation(eventLocation)
+								.build()
+								);
+					}
+				}
+			}
+			
 	}
 	
 }
