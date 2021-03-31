@@ -33,6 +33,19 @@ public class SAMLUserService implements SAMLUserDetailsService {
 		
 		Presenter presenter = presenterRepository.findByusername(username);
 		if (presenter != null) {
+			if (presenter.getName() != firstName) {
+				presenter.setName(firstName);
+				presenterRepository.save(presenter);
+			}
+			if (presenter.getLastName() != lastName) {
+				presenter.setLastName(lastName);
+				presenterRepository.save(presenter);
+			}
+			if (presenter.getEmail() != nameId) {
+				presenter.setEmail(nameId);
+				presenterRepository.save(presenter);
+			}
+			
 			return presenter;
 		}
 		else {			

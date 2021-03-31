@@ -270,19 +270,19 @@ public class EventControllers {
 			else {
 				events = eventRepository.findByLastStatusIn(eventStatuses, pageable);
 			}
-	
 		}
 		
 		return events;
 	}
 	
-	@GetMapping("/send-invite/{subject}/{emailBody}/{toEmail}/{eventLocation}")
-	public void createEventInvite(@PathVariable String subject, @PathVariable String emailBody, 
-			@PathVariable String toEmail, @PathVariable String eventLocation) throws Exception {
+	@GetMapping("/send-invite/{subject}/{message}/{eventLocation}/{eventId}")
+	public void createEventInvite(@PathVariable String subject, @PathVariable String message, 
+	@PathVariable String eventLocation, @PathVariable Long eventId, @AuthenticationPrincipal Presenter sender,
+	@RequestParam(value="presenter", required=false) Long [] presenterIds) throws Exception {
 		if (subject == null) {
 			subject = eventLocation;
 		}
-		eventService.sendEventInvite(subject, emailBody, toEmail, eventLocation);
+		eventService.sendEventInvite(subject, message, presenterIds, eventLocation, eventId, sender);
 	}
 	
 		
