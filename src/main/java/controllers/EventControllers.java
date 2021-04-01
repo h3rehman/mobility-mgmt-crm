@@ -118,7 +118,7 @@ public class EventControllers {
 	@ResponseStatus(HttpStatus.CREATED) //201
 	public ResponseEntity<Void> createEvent(@RequestBody Event eve, @PathVariable String eventType,
 	@PathVariable String orgId, @PathVariable boolean joinEve, @PathVariable String lastStatus,
-	@AuthenticationPrincipal Presenter user, @RequestParam(value="audType", required=false) Long [] audTypes){ 
+	@AuthenticationPrincipal Presenter user, @RequestParam(value="audType", required=false) Long [] audTypes) throws Exception{ 
 		Long presenterId = null;
 		if (user != null) {
 			presenterId = user.getPresenterId();
@@ -147,7 +147,7 @@ public class EventControllers {
 	
 	@PutMapping("/joinevent/{eventId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
-	public void joinEvent(@PathVariable Long eventId, @AuthenticationPrincipal Presenter user) {
+	public void joinEvent(@PathVariable Long eventId, @AuthenticationPrincipal Presenter user) throws Exception {
 		if (user == null ) {
 			System.out.println("No user associated with the Event...");
 		}
