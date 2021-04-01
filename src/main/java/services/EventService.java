@@ -112,7 +112,7 @@ public class EventService {
 	}
 
 	public void addEvent(Event eve, String eventTypeDesc, String orgId, 
-			Long presenterId, boolean joinEve, Long[] audTypes, String lastStatus) {
+			Long presenterId, boolean joinEve, Long[] audTypes, String lastStatus) throws Exception {
 
 		Status status = null;
 		if (lastStatus != null) {
@@ -231,7 +231,7 @@ public class EventService {
 		}	
 	}
 
-	public void joinEvent(Long eventId, Long presenterId) {
+	public void joinEvent(Long eventId, Long presenterId) throws Exception {
 		Optional<Event> optionalEvent = eventRepository.findById(eventId);
 		Optional<Presenter> optionalPresenter = presenterRepository.findById(presenterId);
 		
@@ -242,6 +242,7 @@ public class EventService {
 			evePresenter.setEvent(event);
 			evePresenter.setPresenter(presenter);
 			eventPresenterRepository.save(evePresenter);
+			sendJoinedEventInvite(event, presenter);
 		}
 		
 		else {
@@ -313,7 +314,32 @@ public class EventService {
 					}
 				}
 			}
-			
 	}
-	
+
+	public void sendJoinedEventInvite(Event event, Presenter presenter) throws Exception {
+		
+		    mailSender.setUsername(mailConfig.getUsername());
+		    mailSender.setPassword(mailConfig.getPassword());
+		    Properties properties = new Properties();
+		    properties.put("mail.smtp.auth", mailConfig.getSmtpAuthRequire());
+		    properties.put("mail.smtp.starttls.enable", mailConfig.getSmtpTLSRequire());
+		    properties.put("mail.smtp.ssl.trust", mailConfig.getExchangeServer());
+		    properties.put("mail.smtp.host", mailConfig.getExchangeServer());
+		    properties.put("mail.smtp.port", mailConfig.getSmtpPort());
+		    mailSender.setJavaMailProperties(properties);
+		    
+		    String emailBody = "Event Type: " +  event.getEventTypeDesc();
+		    
+			calendarService.sendCalendarInvite(
+					mailConfig.getFromEmail(),
+					new CalendarRequest.Builder()
+					.withSubject(event.getEventName())
+					.withBody(emailBody)
+					.withToEmail(presenter.getEmail())
+					.withMeetingStartTime(event.getStartDateTime())
+					.withMeetingEndTime(event.getEndDateTime())
+					.withLocation(event.getLocation())
+					.build()
+					);
+		}
 }
