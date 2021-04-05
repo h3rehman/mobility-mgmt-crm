@@ -276,8 +276,8 @@ public class EventService {
 		    properties.put("mail.smtp.port", mailConfig.getSmtpPort());
 		    mailSender.setJavaMailProperties(properties);
 		    
-		    String emailBody = "Sender: " + sender.getName() + " " + sender.getLastName() + "\n "+
-		    					" Note from Sender: " + message;
+		    String emailBody = "Sender: " + sender.getName() + " " + sender.getLastName() + " \n " +
+		    					"Note from Sender: " + message;
 		    
 			Optional<Event> optionalEvent = eventRepository.findById(eventId);
 			
