@@ -30,6 +30,8 @@ import repository.note.Note;
 import repository.note.NoteRepository;
 import repository.organization.Organization;
 import repository.organization.OrganizationRepository;
+import repository.organization.contact.Contact;
+import repository.organization.contact.ContactRepository;
 import services.NoteService;
 
 @RestController
@@ -45,6 +47,9 @@ public class NoteControllers {
 	@Autowired
 	EventRepository eventRepository;
 	
+	@Autowired
+	ContactRepository contactRepository;
+
 	@Autowired
 	NoteService noteService;
 	
@@ -94,11 +99,20 @@ public class NoteControllers {
 	
 	@GetMapping("/event/notes/{eventId}")
 	List<Note> getEventNotes(@PathVariable Long eventId){
-		
 		Optional<Event> optionalEvent = eventRepository.findById(eventId);
 		if (optionalEvent != null) {
 			Event event = optionalEvent.get();
 			return noteRepository.findByEvent(event);
+		}
+		return null;
+	}
+	
+	@GetMapping("/contact/notes/{contactId}")
+	List<Note> getContactNotes(@PathVariable Long contactId){
+		Optional<Contact> optionalContact = contactRepository.findById(contactId);
+		if (optionalContact != null) {
+			Contact contact = optionalContact.get();
+			return noteRepository.findByContact(contact);
 		}
 		return null;
 	}
@@ -110,7 +124,7 @@ public class NoteControllers {
 		Long presenterId = null;
 		if (user != null) {
 			presenterId = user.getPresenterId();
-			noteService.addNote(note, orgId, presenterId, null);
+			noteService.addNote(note, orgId, presenterId, null, null);
 			// Build the location URI of the new item
 			URI location = ServletUriComponentsBuilder
 					.fromCurrentRequestUri()
@@ -132,7 +146,7 @@ public class NoteControllers {
 		Long presenterId = null;
 		if (user != null) {
 			presenterId = user.getPresenterId();
-			noteService.addNote(note, null, presenterId, eventId);
+			noteService.addNote(note, null, presenterId, eventId, null);
 			// Build the location URI of the new item
 			URI location = ServletUriComponentsBuilder
 					.fromCurrentRequestUri()
@@ -146,8 +160,32 @@ public class NoteControllers {
 			return null;
 		}
 	}
+	
+	@PostMapping("/contact/newNote/{contactId}")
+	@ResponseStatus(HttpStatus.CREATED)
+	public ResponseEntity<Void> createContactNote (@RequestBody Note note, @PathVariable Long contactId, 
+			@AuthenticationPrincipal Presenter user){
+		Long presenterId = null;
+		if (user != null) {
+			presenterId = user.getPresenterId();
+			noteService.addNote(note, null, presenterId, null, contactId);
+			// Build the location URI of the new item
+			URI location = ServletUriComponentsBuilder
+					.fromCurrentRequestUri()
+					.path("/{noteId}")
+					.buildAndExpand(note.getNoteId())
+					.toUri(); 	
+			// Explicitly create a 201 Created response
+			System.out.println("######### Created new Note Id: " + note.getNoteId());
+			return ResponseEntity.created(location).build();				
+		}
+		else {
+			return null;
+		}
+	}
 
-	//For both Organization and Event notes
+
+	//For Organization, Contact and Event notes
 	@PutMapping("/editNote/{noteId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
 	public void updateNote (@RequestBody Note note, @PathVariable Long noteId, 

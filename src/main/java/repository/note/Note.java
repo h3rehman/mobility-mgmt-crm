@@ -23,6 +23,7 @@ import repository.calllog.CallLog;
 import repository.event.Event;
 import repository.event.presenter.Presenter;
 import repository.organization.Organization;
+import repository.organization.contact.Contact;
 
 
 @Entity
@@ -49,10 +50,13 @@ public class Note {
 	@JoinColumn(name = "EventID")
 	Event event;
 	
-	
 	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name = "OrgID")
 	Organization org;
+	
+	@ManyToOne
+	@JoinColumn(name = "contactID")
+	Contact contact;
 	
 	@ManyToOne
 	@JoinColumn(name = "createdby")
@@ -153,6 +157,17 @@ public class Note {
 
 	public void setCallLog(CallLog callLog) {
 		this.callLog = callLog;
+	}
+
+	public String getContact() {
+		if (contact != null) {
+			return contact.getFirstName() + " " + contact.getLastName();
+		}
+		return null;
+	}
+
+	public void setContact(Contact contact) {
+		this.contact = contact;
 	}
 	
 	

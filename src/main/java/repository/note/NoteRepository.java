@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import repository.calllog.CallLog;
 import repository.event.Event;
 import repository.organization.Organization;
+import repository.organization.contact.Contact;
 
 @Repository	
 public interface NoteRepository extends JpaRepository<Note, Long> {
@@ -26,5 +27,7 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
 	public List<Note> findByEvent(Event event);
 	
 	public Note findBycallLog(CallLog callLog);
+	
+	public List<Note> findByContact(Contact contact);
 
 }
