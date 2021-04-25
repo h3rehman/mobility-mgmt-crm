@@ -265,31 +265,13 @@ public class OrganizationControllers {
 	public void updateOrg(@RequestBody Organization org, @PathVariable String countyName) {
 		orgService.updateOrg(org, countyName);
 	}
-
-	@PutMapping("/contact")
-	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
-	public void updateContact(@RequestBody Contact con, @AuthenticationPrincipal Presenter user) {
-		if (user != null) {
-			orgService.updateContact(con, user);
-		}
-		System.out.println("User identity cannot be confirmed... Cannot update contact.");
-	}
-
-	@DeleteMapping("/orgContact/{orgId}/{contactId}")
-	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
-	public void deleteOrgContact(@PathVariable Long orgId, @PathVariable Long contactId) {
-		String sql = "DELETE from OrganizationContact "
-				 	+ "WHERE orgid = ? "
-				 	+ "AND contactid = ?";
-		jdbcTemplate.update(sql, orgId, contactId);
-	}
 	
-	@PostMapping("/orgContact/{orgId}") 
+	@PostMapping("/create-update-contact/{orgId}") 
 	@ResponseStatus(HttpStatus.CREATED) // 201
 	public ResponseEntity<Void> createContact(@RequestBody Contact con, @PathVariable String orgId,
 			@AuthenticationPrincipal Presenter user){ 
 		if (user != null) {
-			orgService.associateContact(con, orgId, user);
+			orgService.createContact(con, orgId, user);
 			
 			// Build the location URI of the new item
 			URI location = ServletUriComponentsBuilder
@@ -303,6 +285,24 @@ public class OrganizationControllers {
 		}
 		System.out.println("Returned null Presenter.. No Contact created.");
 		return null;
+	}
+
+	@PutMapping("/create-update-contact/{orgId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
+	public void updateContact(@RequestBody Contact con, @PathVariable String orgId, @AuthenticationPrincipal Presenter user) {
+		if (user != null) {
+			orgService.updateContact(con, user, orgId);
+		}
+		System.out.println("User identity cannot be confirmed... Cannot update contact.");
+	}
+
+	@DeleteMapping("/orgContact/{orgId}/{contactId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
+	public void deleteOrgContact(@PathVariable Long orgId, @PathVariable Long contactId) {
+		String sql = "DELETE from OrganizationContact "
+				 	+ "WHERE orgid = ? "
+				 	+ "AND contactid = ?";
+		jdbcTemplate.update(sql, orgId, contactId);
 	}
 	
 	@GetMapping("/allorgnames")

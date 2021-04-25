@@ -103,7 +103,7 @@ public class OrganizationService {
 			
 	}
 
-	public void updateContact(Contact con, Presenter user) {
+	public void updateContact(Contact con, Presenter user, String orgId) {
 		Optional<Contact> optionalCon = contactRepository.findById(con.getContactId());
 		
 		if (optionalCon != null) {
@@ -121,6 +121,24 @@ public class OrganizationService {
 
 			originalCon.setLastModifiedDate(currentTime);
 			contactRepository.save(originalCon);
+			
+			if (!orgId.equalsIgnoreCase("-1")) {
+				Long oId = Long.parseLong(orgId);
+				Optional<Organization> org = orgRepository.findById(oId);
+				
+				if (org != null) {
+					Organization originalOrg = org.get();
+					OrganizationContact orgCon = new OrganizationContact();
+					orgCon.setContact(con);
+					orgCon.setOrganization(originalOrg);
+					organizationContactRepository.save(orgCon);
+					System.out.println("############## New OrganizationContact Created, ContactId " 
+							+ con.getContactId() + " Organization ID: " + originalOrg.getOrgId());
+				}
+				else {
+					System.out.println("Something wrong with the Organization or I dont know what!!!");
+				}	
+			}
 		}
 		else {
 			System.out.println("Contact Returned is Null.. cannot update Contact.");
@@ -132,7 +150,7 @@ public class OrganizationService {
 		return optionalContact.orElseThrow(() -> new ClassNotFoundException("No Contact exist with the id: " + id));
 	}
 
-	public void associateContact(Contact con, String orgId, Presenter user) {
+	public void createContact(Contact con, String orgId, Presenter user) {
 		con.setCreatedBy(user);
 		con.setLastModifiedBy(user);
 		
@@ -143,6 +161,7 @@ public class OrganizationService {
 		
 		contactRepository.save(con); 
 		
+		if (!orgId.equalsIgnoreCase("-1")) {
 		Long oId = Long.parseLong(orgId);
 		Optional<Organization> org = orgRepository.findById(oId);
 		
@@ -155,15 +174,11 @@ public class OrganizationService {
 			System.out.println("############## New OrganizationContact Created, ContactId " 
 			+ con.getContactId() + " Organization ID: " + originalOrg.getOrgId());
 		}
-		
+
 		else {
 			System.out.println("Something wrong with the Organization or I dont know what!!!");
 		}	
-//		Long contactId = con.getContactId();
-//		String sql = "INSERT into organizationcontact (orgid, contactid) "
-//			 	+ "VALUES (?, ?)";
-//		jdbcTemplate.update(sql, contactId, orgId);
+      }
 	}
-	
 
 }
