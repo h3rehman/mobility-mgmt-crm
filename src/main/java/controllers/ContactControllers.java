@@ -1,12 +1,16 @@
 package controllers;
 
 import java.util.List;
+import java.util.Map;
+
+import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,8 +24,17 @@ import repository.organization.contact.ContactRepository;
 @RequestMapping("/api")
 public class ContactControllers {
 	
+	DataSource dataSource;
+	JdbcTemplate jdbcTemplate;
+	
 	@Autowired
 	ContactRepository contactRepository;
+
+	@Autowired
+	ContactControllers (DataSource dataSource){
+		this.dataSource = dataSource;
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	}
 	
 
 	@GetMapping("/contacts-sorted-default")
@@ -54,6 +67,13 @@ public class ContactControllers {
 		
 		contacts = contactRepository.findAll(pageable);		
 		return contacts;
+	}
+	
+	@GetMapping("/all-contact-names")
+	public List<Map<String, Object>> getContactNames () {
+		String sql = "SELECT ContactID AS contactId, firstname AS firstName, lastname AS lastName, title, phone, altphone AS altPhone, email "
+				   + "FROM Contact";
+		return jdbcTemplate.queryForList(sql);
 	}
 
 }

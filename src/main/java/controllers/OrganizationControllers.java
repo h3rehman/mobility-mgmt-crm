@@ -36,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import repository.organization.View;
 import repository.organization.contact.Contact;
+import repository.organization.contact.ContactRepository;
 import repository.organization.contact.OrganizationContactRepository;
 import repository.organization.county.County;
 import repository.organization.county.CountyRepository;
@@ -70,6 +71,9 @@ public class OrganizationControllers {
 	
 	@Autowired
 	StatusRepository statusRepository;
+	
+	@Autowired
+	ContactRepository contactRepository;
 	
 	@Autowired
 	OrganizationControllers (DataSource dataSource){
@@ -336,5 +340,18 @@ public class OrganizationControllers {
 			}
 		}
 		return null;
+	}
+	
+	@PutMapping("/associate-org-contact/{orgId}/{contactId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
+	public void associateOrgContact(@PathVariable Long orgId, @PathVariable Long contactId) {
+		Optional<Contact> optContact = contactRepository.findById(contactId);
+		if (optContact != null) {
+			Contact contact = optContact.get();
+			orgService.associateOrgContact(orgId, contact);
+		}
+		else {
+			System.out.println("Contact for association with Org. is null.....");
+		}
 	}
 }

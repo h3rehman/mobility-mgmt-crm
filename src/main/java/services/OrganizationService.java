@@ -124,20 +124,7 @@ public class OrganizationService {
 			
 			if (!orgId.equalsIgnoreCase("-1")) {
 				Long oId = Long.parseLong(orgId);
-				Optional<Organization> org = orgRepository.findById(oId);
-				
-				if (org != null) {
-					Organization originalOrg = org.get();
-					OrganizationContact orgCon = new OrganizationContact();
-					orgCon.setContact(con);
-					orgCon.setOrganization(originalOrg);
-					organizationContactRepository.save(orgCon);
-					System.out.println("############## New OrganizationContact Created, ContactId " 
-							+ con.getContactId() + " Organization ID: " + originalOrg.getOrgId());
-				}
-				else {
-					System.out.println("Something wrong with the Organization or I dont know what!!!");
-				}	
+				associateOrgContact(oId, originalCon);
 			}
 		}
 		else {
@@ -163,22 +150,25 @@ public class OrganizationService {
 		
 		if (!orgId.equalsIgnoreCase("-1")) {
 		Long oId = Long.parseLong(orgId);
-		Optional<Organization> org = orgRepository.findById(oId);
+		associateOrgContact(oId, con);
+		}
+	}
+	
+	public void associateOrgContact (Long orgId, Contact contact) {
+		Optional<Organization> org = orgRepository.findById(orgId);
 		
 		if (org != null) {
 			Organization originalOrg = org.get();
 			OrganizationContact orgCon = new OrganizationContact();
-			orgCon.setContact(con);
+			orgCon.setContact(contact);
 			orgCon.setOrganization(originalOrg);
 			organizationContactRepository.save(orgCon);
 			System.out.println("############## New OrganizationContact Created, ContactId " 
-			+ con.getContactId() + " Organization ID: " + originalOrg.getOrgId());
+			+ contact.getContactId() + " Organization ID: " + originalOrg.getOrgId());
 		}
-
 		else {
 			System.out.println("Something wrong with the Organization or I dont know what!!!");
 		}	
-      }
 	}
 
 }
