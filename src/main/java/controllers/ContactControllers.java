@@ -1,5 +1,7 @@
 package controllers;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -47,9 +49,9 @@ public class ContactControllers {
 		return contactRepository.findAll(pageable);
 	}
 	
-	@GetMapping("/contacts-filtered-sorted/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}")
+	@GetMapping("/contacts-filtered-sorted/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}/{from}/{to}")
 	public Page<Contact> getCustomSortedFilteredContacts(@PathVariable Integer pageNumber, @PathVariable Integer pageElements, 
-			@PathVariable String fieldName, @PathVariable String sortOrder){
+			@PathVariable String fieldName, @PathVariable String sortOrder, @PathVariable String from, @PathVariable String to){
 		
 		Page<Contact> contacts = null;
 		Pageable pageable = null;
@@ -65,7 +67,21 @@ public class ContactControllers {
 			pageable = PageRequest.of(pageNumber, pageElements, Sort.by("firstName").ascending());
 		}
 		
-		contacts = contactRepository.findAll(pageable);		
+		LocalDateTime fromLastContactDate= null;
+		LocalDateTime toLastContactDate = null;
+		
+		if (!from.equalsIgnoreCase("null") && !to.equalsIgnoreCase("null")) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			fromLastContactDate = LocalDateTime.parse(from, formatter);
+			toLastContactDate = LocalDateTime.parse(to, formatter);
+		}
+		
+		if (fromLastContactDate != null && toLastContactDate != null) {
+			contacts = contactRepository.findByLastContactDateBetween(fromLastContactDate, toLastContactDate, pageable);
+		}
+		else {
+			contacts = contactRepository.findAll(pageable);		
+		}
 		return contacts;
 	}
 	

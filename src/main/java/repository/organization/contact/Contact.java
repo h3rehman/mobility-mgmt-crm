@@ -55,6 +55,9 @@ public class Contact {
 	@Column(name = "lastmodifieddate", columnDefinition = "TIMESTAMP")
 	private LocalDateTime lastModifiedDate;
 	
+	@Column(name = "lastcontact", columnDefinition = "TIMESTAMP")
+	private LocalDateTime lastContactDate;
+	
 	@ManyToOne
 	@JoinColumn(name = "createdby")
 	Presenter createdBy;
@@ -155,6 +158,14 @@ public class Contact {
 	public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
 		this.lastModifiedDate = lastModifiedDate;
 	}
+	
+	public LocalDateTime getLastContactDate() {
+		return lastContactDate;
+	}
+
+	public void setLastContactDate(LocalDateTime lastContactDate) {
+		this.lastContactDate = lastContactDate;
+	}
 
 	public String getCreatedBy() {
 		if (createdBy != null) {
@@ -177,5 +188,6 @@ public class Contact {
 	public void setLastModifiedBy(Presenter lastModifiedBy) {
 		this.lastModifiedBy = lastModifiedBy;
 	}
+
 		
 }

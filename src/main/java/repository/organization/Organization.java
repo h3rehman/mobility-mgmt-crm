@@ -59,6 +59,7 @@ public class Organization {
 	String zip;
 	
 	@Column(name = "laststatusdate", columnDefinition = "TIMESTAMP")
+	@JsonView(View.OrgDetail.class)
 	private LocalDateTime lastContact;
 	
 	@ManyToOne
