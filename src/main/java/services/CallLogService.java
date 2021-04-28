@@ -38,6 +38,7 @@ public class CallLogService {
 	@Autowired
 	StatusRepository statusRepository;
 	
+	
 	public void addChangeLog(Note note, Presenter user, Long orgId, Long contactId, 
 		Long lastStatusId, String requestType) {
 		
@@ -96,6 +97,8 @@ public class CallLogService {
 				Optional<Contact> optionalContact = contactRepository.findById(contactId);
 				if (optionalContact != null) {
 					Contact contact = optionalContact.get();
+					contact.setLastContactDate(currentTime);
+					contactRepository.save(contact);
 					callLog.setContact(contact);
 				}
 			}
