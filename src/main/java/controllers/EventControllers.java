@@ -1,7 +1,9 @@
 package controllers;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,7 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,6 +37,8 @@ import repository.event.Event;
 import repository.event.EventRepository;
 import repository.event.Eventtype;
 import repository.event.EventtypeRepository;
+import repository.event.presenter.EventPresenterRepository;
+import repository.event.presenter.Eventpresenter;
 import repository.event.presenter.Presenter;
 import repository.organization.Organization;
 import repository.status.Status;
@@ -60,6 +65,9 @@ public class EventControllers {
 	
 	@Autowired
 	StatusRepository statusRepository;
+	
+	@Autowired
+	EventPresenterRepository eventPresenterRepository;
 
 	EventControllers (DataSource dataSource){
 		this.dataSource = dataSource;
@@ -113,6 +121,193 @@ public class EventControllers {
 	List<Event> getMyEvents(@AuthenticationPrincipal Presenter user) throws ClassNotFoundException{
 		return eventService.myUpcomingAppointments(user.getPresenterId());
 	}
+	
+	@GetMapping("/sorted-default-myevents")
+	Page<Event> getMyDefaultUpcomingEvents(@AuthenticationPrincipal Presenter user) {
+		
+		final int pageNumber = 0;
+		final int pageElements = 5;
+			
+		Pageable pageable = PageRequest.of(pageNumber, pageElements, Sort.by("event.startDateTime").descending());
+		
+		ZoneId central = ZoneId.of("America/Chicago");
+		LocalDate dateNow = LocalDate.now(central);
+		LocalDateTime date2DateTime = LocalDateTime.parse(dateNow.toString() + " 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")); //Will compare date from Midnight
+		
+		Page<Eventpresenter> eventPresenters = eventPresenterRepository.findByPresenterAndEventStartDateTimeGreaterThanEqual(user, date2DateTime, pageable);
+		List<Event> eventList = new ArrayList<Event>();
+		
+		for (Eventpresenter evePresenter : eventPresenters.getContent()) {
+			eventList.add(evePresenter.getEvent()); 
+		}
+		
+//		final int fromIndex = (int) pageable.getOffset();
+//		final int toIndex = Math.min((fromIndex + pageable.getPageSize()), eventList.size());
+//		long eventListSizeInLong = (long) eventList.size();
+//	
+//		Page<Event> events = new PageImpl<Event>(eventList.subList(fromIndex, toIndex), pageable, eventListSizeInLong);
+		Page<Event> events = new PageImpl<Event>(eventList, pageable, eventPresenters.getTotalElements());
+		return events;	
+	}
+	
+	@GetMapping("/sorted-filtered-myevents/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}/{from}/{to}/{onlyUpcoming}")
+	Page<Event> getMySortedFilteredEvents(@AuthenticationPrincipal Presenter user, @PathVariable Integer pageNumber, 
+			@PathVariable Integer pageElements, @PathVariable String fieldName, @PathVariable String sortOrder, 
+			@PathVariable String from, @PathVariable String to, @PathVariable Boolean onlyUpcoming,
+			@RequestParam(value="eveType", required=false) String [] eveTypes,
+			@RequestParam(value="eveStatus", required=false) String[] eveStatuses) {
+		
+		Page<Event> events = null;
+		Pageable pageable = null;
+		if (!fieldName.equalsIgnoreCase("null")) {
+			if (sortOrder.equalsIgnoreCase("asce") || sortOrder.equalsIgnoreCase("null") ) {
+				pageable = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).ascending());
+			}
+			else {
+				pageable = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).descending());
+			}
+		}
+		else { //default sort 
+			pageable = PageRequest.of(pageNumber, pageElements, Sort.by("event.startDateTime").descending());
+		}
+		
+	
+		List<Eventtype> eventTypes = new ArrayList<Eventtype>();
+		if (eveTypes != null) {
+			for (int i=0; i<eveTypes.length; i++) {
+				Eventtype eveType = eventTypeRepository.findByeventTypeDesc(eveTypes[i]);
+				if (eveType != null) {
+					eventTypes.add(eveType);
+				}
+			}
+		}
+		
+		List<Status> eventStatuses = new ArrayList<Status>();
+		if (eveStatuses != null) {
+			for (int i=0; i<eveStatuses.length; i++) {
+				Status status = statusRepository.findBystatusDesc(eveStatuses[i]);
+				if (status != null) {
+					eventStatuses.add(status);
+				}
+			}
+		}
+		
+		LocalDateTime fromDate = null;
+		LocalDateTime toDate = null;
+		
+		if (!from.equalsIgnoreCase("null") && !to.equalsIgnoreCase("null")) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			fromDate = LocalDateTime.parse(from, formatter);
+			toDate = LocalDateTime.parse(to, formatter);
+		}
+		
+		Page<Eventpresenter> eventPresenters = null;
+		List<Event> eventList = new ArrayList<Event>();
+
+		if (onlyUpcoming) { //Only Upcoming events (no from/to dates)
+
+			ZoneId central = ZoneId.of("America/Chicago");
+			LocalDate dateNow = LocalDate.now(central);
+			LocalDateTime dateTime = LocalDateTime.parse(dateNow.toString() + " 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")); //Will compare date from Midnight
+
+			//Option: 1	
+			if (eventTypes.size() > 0) {
+				
+				if (eventStatuses.size() < 1) {
+					eventPresenters = eventPresenterRepository.findByPresenterAndEventEventTypeInAndEventStartDateTimeGreaterThanEqual(user, eventTypes, dateTime, pageable);
+				}
+				else {
+				eventPresenters = eventPresenterRepository.findByPresenterAndEventEventTypeInAndEventLastStatusInAndEventStartDateTimeGreaterThanEqual(user, eventTypes, eventStatuses, dateTime, pageable);
+				}
+			}
+			
+			//Option: 2
+			else {
+				if (eventStatuses.size() < 1) {
+					eventPresenters = eventPresenterRepository.findByPresenterAndEventStartDateTimeGreaterThanEqual(user, dateTime, pageable);
+				}
+				else  {
+					eventPresenters = eventPresenterRepository.findByPresenterAndEventLastStatusInAndEventStartDateTimeGreaterThanEqual(user, eventStatuses, dateTime, pageable);		
+			}	
+		  }
+		}
+		else {
+					
+			//Option: 1	
+			if (eventTypes.size() > 0 && fromDate != null && toDate != null) {
+				
+				if (eventStatuses.size() < 1) {
+					eventPresenters = eventPresenterRepository.findByPresenterAndEventStartDateTimeBetweenAndEventEventTypeIn(user, fromDate, toDate, eventTypes, pageable);
+				}
+				else {
+					eventPresenters = eventPresenterRepository.findByPresenterAndEventStartDateTimeBetweenAndEventEventTypeInAndEventLastStatusIn(user, fromDate, toDate, eventTypes, eventStatuses, pageable);
+				}
+			}
+			
+			//Option: 2
+			else if(eventTypes.size() > 0 && fromDate == null && toDate == null) {
+				
+				if (eventStatuses.size() < 1) {
+					eventPresenters = eventPresenterRepository.findByPresenterAndEventEventTypeIn(user, eventTypes, pageable);
+				}
+				else {
+					eventPresenters = eventPresenterRepository.findByPresenterAndEventEventTypeInAndEventLastStatusIn(user, eventTypes, eventStatuses, pageable);				}
+			}
+			
+			//Option: 3
+			else if (fromDate != null && toDate != null && eventTypes.size() < 1) {
+				if (eventStatuses.size() < 1) {
+					eventPresenters = eventPresenterRepository.findByPresenterAndEventStartDateTimeBetween(user, fromDate, toDate, pageable);
+					}
+				else  {
+					eventPresenters = eventPresenterRepository.findByPresenterAndEventStartDateTimeBetweenAndEventLastStatusIn(user, fromDate, toDate, eventStatuses, pageable);
+				}
+			}
+			
+			//Option: 4
+			else {
+				if (eventStatuses.size() < 1) {
+					eventPresenters = eventPresenterRepository.findByPresenter(user, pageable);
+					}
+				else {
+					eventPresenters = eventPresenterRepository.findByPresenterAndEventLastStatusIn(user, eventStatuses, pageable);
+				}
+			}
+		}
+	
+		
+		for (Eventpresenter evePresenter : eventPresenters.getContent()) {
+			eventList.add(evePresenter.getEvent()); 
+		}
+		
+//		final int fromIndex = (int) pageable.getOffset();
+//		final int toIndex = Math.min((fromIndex + pageable.getPageSize()), eventList.size());
+//		long eventListSizeInLong = (long) eventList.size();
+	
+//		events = new PageImpl<Event>(eventList, pageable, eventListSizeInLong);
+
+		Pageable pageableEvents = null;
+		if (!fieldName.equalsIgnoreCase("null")) {
+			int preHead = fieldName.indexOf(".");
+			String eventFieldName = fieldName.substring(preHead+1);
+
+			if (sortOrder.equalsIgnoreCase("asce") || sortOrder.equalsIgnoreCase("null") ) {
+				pageableEvents = PageRequest.of(pageNumber, pageElements, Sort.by(eventFieldName).ascending());
+			}
+			else {
+				pageableEvents = PageRequest.of(pageNumber, pageElements, Sort.by(eventFieldName).descending());
+			}
+		}
+		else { //default sort 
+			pageableEvents = PageRequest.of(pageNumber, pageElements, Sort.by("startDateTime").descending());
+		}
+
+		
+		events = new PageImpl<Event>(eventList, pageableEvents, eventPresenters.getTotalElements());
+		
+		return events;	
+	}
+	
 	
 	@PostMapping("/event/{eventType}/{orgId}/{joinEve}/{lastStatus}")
 	@ResponseStatus(HttpStatus.CREATED) //201
