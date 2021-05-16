@@ -23,32 +23,7 @@ import repository.status.Status;
 public interface EventPresenterRepository extends JpaRepository<Eventpresenter, Long> {
 	
 	public Eventpresenter findByEventAndPresenter(Event event, Presenter presenter);
-	//Default query
-//	public List<Eventpresenter> findByPresenterAndEventStartDateTimeGreaterThanEqual(Presenter user, LocalDateTime dateTime);
-//	
-//	public List<Eventpresenter> findByPresenterAndEventEventTypeInAndEventStartDateTimeGreaterThanEqual(Presenter user, List<Eventtype> eventTypes, LocalDateTime dateTime);
-//	
-//	public List<Eventpresenter> findByPresenterAndEventEventTypeInAndEventLastStatusInAndEventStartDateTimeGreaterThanEqual(Presenter user, List<Eventtype> eventTypes, List<Status> lastStatuses, LocalDateTime dateTime);
-//	
-//	public List<Eventpresenter> findByPresenterAndEventLastStatusInAndEventStartDateTimeGreaterThanEqual(Presenter user, List<Status> lastStatuses, LocalDateTime dateTime);
-//		
-//	public List<Eventpresenter> findByPresenterAndEventStartDateTimeBetween(Presenter user, LocalDateTime fromDate, LocalDateTime toDate);
-//
-//	public List<Eventpresenter> findByPresenterAndEventStartDateTimeBetweenAndEventEventTypeIn(Presenter user, LocalDateTime fromDate, LocalDateTime toDate, List<Eventtype> eventTypes);
-//	
-//	public List<Eventpresenter> findByPresenterAndEventStartDateTimeBetweenAndEventLastStatusIn (Presenter user, LocalDateTime fromDate, LocalDateTime toDate, List<Status> lastStatuses);
-//	
-//	public List<Eventpresenter> findByPresenterAndEventStartDateTimeBetweenAndEventEventTypeInAndEventLastStatusIn(Presenter user, LocalDateTime fromDate, LocalDateTime toDate, List<Eventtype> eventTypes, List<Status> lastStatuses);
-//	
-//	public List<Eventpresenter> findByPresenterAndEventEventTypeIn(Presenter user, List<Eventtype> eventTypes);
-//	
-//	public List<Eventpresenter> findByPresenterAndEventEventTypeInAndEventLastStatusIn(Presenter user, List<Eventtype> eventTypes, List<Status> lastStatuses);
-//	
-//	public List<Eventpresenter> findByPresenterAndEventLastStatusIn(Presenter user, List<Status> lastStatuses);
-//	
-//	public List<Eventpresenter> findByPresenter(Presenter user);
-	
-	
+
 	//Default query
 	public Page<Eventpresenter> findByPresenterAndEventStartDateTimeGreaterThanEqual(Presenter user, LocalDateTime dateTime, Pageable pageable);
 	
