@@ -126,7 +126,7 @@ public class EventControllers {
 	Page<Event> getMyDefaultUpcomingEvents(@AuthenticationPrincipal Presenter user) {
 		
 		final int pageNumber = 0;
-		final int pageElements = 5;
+		final int pageElements = 10;
 			
 		Pageable pageable = PageRequest.of(pageNumber, pageElements, Sort.by("event.startDateTime").descending());
 		
@@ -141,11 +141,6 @@ public class EventControllers {
 			eventList.add(evePresenter.getEvent()); 
 		}
 		
-//		final int fromIndex = (int) pageable.getOffset();
-//		final int toIndex = Math.min((fromIndex + pageable.getPageSize()), eventList.size());
-//		long eventListSizeInLong = (long) eventList.size();
-//	
-//		Page<Event> events = new PageImpl<Event>(eventList.subList(fromIndex, toIndex), pageable, eventListSizeInLong);
 		Page<Event> events = new PageImpl<Event>(eventList, pageable, eventPresenters.getTotalElements());
 		return events;	
 	}
