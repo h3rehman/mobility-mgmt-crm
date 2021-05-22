@@ -18,7 +18,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import org.springframework.context.annotation.Lazy;
 
@@ -70,7 +69,6 @@ public class Organization {
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name="OrgID")
 	@JsonIgnore
-//	@NotNull
 	Set<OrganizationContact> orgContacts;
 	
 	@ManyToOne(cascade=CascadeType.ALL)
