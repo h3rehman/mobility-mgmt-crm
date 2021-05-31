@@ -17,6 +17,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
 import config.MailConfig;
+import repository.elasticsearch.EventESRepository;
 import repository.event.Event;
 import repository.event.EventRepository;
 import repository.event.Eventtype;
@@ -37,6 +38,7 @@ import repository.status.Status;
 import repository.status.StatusRepository;
 import services.calendar.CalendarRequest;
 import services.calendar.CalendarService;
+import services.elasticsearch.IndexingService;
 
 @Service
 public class EventService {
@@ -69,16 +71,19 @@ public class EventService {
 	StatusRepository statusRepository;
 	
 	@Autowired
+	EventESRepository eventEsRepository;
+	
+	@Autowired
 	CalendarService calendarService;
 	
 	@Autowired
 	MailConfig mailConfig;
 	
-//	@Autowired
-//	CalendarRequest calendarRequest;
-	
 	@Autowired
 	JavaMailSenderImpl mailSender;
+	
+	@Autowired
+	IndexingService indexingService;
 	
 	public List<Event> getAllEvents(){
 		return eventRepository.findAll();
@@ -139,6 +144,9 @@ public class EventService {
 		eve.setEventType(eventType);
 		eventRepository.save(eve);
 		
+		//insert in elasticsearch events index
+		indexingService.createUpdateAndDeleteIndexElements("POST", eve, null, null);
+		
 		if (audTypes != null) {				
 			addAudienceTypes(audTypes, eve);
 		}
@@ -165,6 +173,7 @@ public class EventService {
 		}
 	  System.out.println("### New Event created with ID: " + eve.getEventId());
 	}
+
 
 	public void updateEvent(Event eve, String eventTypeDesc, 
 			String orgId, Long[] audTypes, String lastStatus) {
@@ -195,6 +204,9 @@ public class EventService {
 			}
 
 			eventRepository.save(eveOriginal);
+			
+			//updating elasticsearch events index
+			indexingService.createUpdateAndDeleteIndexElements("PUT", eveOriginal, null, null);
 			
 			if (audTypes != null) {				
 				addAudienceTypes(audTypes, eveOriginal);
