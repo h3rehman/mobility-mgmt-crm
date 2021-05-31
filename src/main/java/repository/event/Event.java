@@ -18,6 +18,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,13 +41,13 @@ import repository.status.Status;
 @Entity
 @Table(name = "Event")
 public class Event {
-
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "EventID")
 	@JsonView(View.OrgDetail.class)
 	private Long eventId;
-	
+
 	@Column(name = "eventname")
 	private String eventName;
 		

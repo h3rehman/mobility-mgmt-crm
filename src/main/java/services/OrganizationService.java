@@ -21,6 +21,7 @@ import repository.organization.contact.OrganizationContact;
 import repository.organization.contact.OrganizationContactRepository;
 import repository.organization.county.County;
 import repository.organization.county.CountyRepository;
+import services.elasticsearch.IndexingService;
 
 @Service
 public class OrganizationService {
@@ -36,6 +37,9 @@ public class OrganizationService {
 	
 	@Autowired
 	OrganizationContactRepository organizationContactRepository;
+	
+	@Autowired
+	IndexingService indexingService;
 	
 	DataSource dataSource;
 	JdbcTemplate jdbcTemplate;
@@ -76,6 +80,8 @@ public class OrganizationService {
 		County county = countyRepository.findBycountyDesc(countyName);
 		org.setCounty(county);
 		orgRepository.save(org);
+		//insert in elasticsearch organizations index
+		indexingService.createUpdateAndDeleteIndexElements("POST", null, org, null);
 	}
 	
 	public List<Organization> filterOrganizations(String county, String orgName){
@@ -96,6 +102,9 @@ public class OrganizationService {
 			orgOriginal.setPhone(org.getPhone());
 			orgOriginal.setZip(org.getZip());
 			orgRepository.save(orgOriginal);
+			
+			//insert in elasticsearch organizations index
+			indexingService.createUpdateAndDeleteIndexElements("PUT", null, orgOriginal, null);	
 		}
 		else {
 			System.out.println("Organization Returned is Null");
@@ -122,6 +131,9 @@ public class OrganizationService {
 			originalCon.setLastModifiedDate(currentTime);
 			contactRepository.save(originalCon);
 			
+			//insert in elasticsearch contacts index
+			indexingService.createUpdateAndDeleteIndexElements("PUT", null, null, originalCon);
+			
 			if (!orgId.equalsIgnoreCase("-1")) {
 				Long oId = Long.parseLong(orgId);
 				associateOrgContact(oId, originalCon);
@@ -147,6 +159,9 @@ public class OrganizationService {
 		con.setLastModifiedDate(currentTime);
 		
 		contactRepository.save(con); 
+		
+		//insert in elasticsearch contacts index
+		indexingService.createUpdateAndDeleteIndexElements("POST", null, null, con);
 		
 		if (!orgId.equalsIgnoreCase("-1")) {
 		Long oId = Long.parseLong(orgId);
