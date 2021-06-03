@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 public class EventES {
 	
 	@org.springframework.data.annotation.Id
-	private String Id;
+	private String id;
 	
 	@Field(type = FieldType.Text)
 	private String eventName;
@@ -22,11 +22,11 @@ public class EventES {
 	public EventES(){}
 
 	public String getId() {
-		return Id;
+		return id;
 	}
 
 	public void setId(String id) {
-		Id = id;
+		this.id = id;
 	}
 
 	public String getEventName() {
