@@ -104,7 +104,7 @@ public class ElasticsearchControllers {
 		SearchRequest searchRequest = new SearchRequest(EVENT_INDEX, ORG_INDEX, CONTACT_INDEX);
 		// Create a search Source
 		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-		 searchSourceBuilder.query(boolQuery);
+		 searchSourceBuilder.query(boolQuery).size(20);  //can return MAX 15 results. 
 		 searchRequest.source(searchSourceBuilder);
 		// Create object to get Response
 		SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
