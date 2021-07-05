@@ -64,7 +64,7 @@ public class ESCRUDTests {
 	@Value("${elasticsearch.indices.contacts}")
 	private String CONTACT_INDEX;
 	
-//	@BeforeEach
+	@BeforeEach
 	void createESElement () {
 		EventES eventEs = new EventES();
 		eventEs.setId("100");
