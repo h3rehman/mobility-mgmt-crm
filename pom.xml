@@ -15,7 +15,7 @@
 	<description>Mobility Management Outreach API </description>
 
 	<properties>
-		<java.version>1.8</java.version>
+		<java.version>16</java.version>
 	</properties>
 	<!--  <packaging>war</packaging>-->
 	
@@ -60,10 +60,7 @@
 		    <artifactId>spring-data-elasticsearch</artifactId>
 		    <version>4.1.9</version>
 		</dependency>
-		<!--  <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mustache</artifactId>
-		</dependency>-->
+	
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -90,12 +87,13 @@
 		      <artifactId>spring-security-saml-dsl-core</artifactId>
 		      <version>1.0.5.RELEASE</version>
 	    </dependency>
-		<dependency>
+	<!--  <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
@@ -117,15 +115,16 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+	
 	</dependencies>
 	
 	<build>
 	<finalName>mm-outreach-service-1.0</finalName>
 		<plugins>
-			<plugin>
-			<configuration>
-				<executable>true</executable>
-			</configuration>
+    		<plugin>
+				<configuration>
+					<executable>true</executable>
+				</configuration>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
