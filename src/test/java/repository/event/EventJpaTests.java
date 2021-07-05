@@ -29,6 +29,7 @@ import application.Application;
 @EnableAutoConfiguration
 @SpringBootTest(classes = Application.class)
 @ExtendWith(SpringExtension.class)
+@Disabled("Tests disabled until environment specific (PROD/STAGE) tests are not written")
 public class EventJpaTests {
 	
 	@Autowired
