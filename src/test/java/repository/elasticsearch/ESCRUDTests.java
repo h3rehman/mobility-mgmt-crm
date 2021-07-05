@@ -19,6 +19,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ import application.Application;
 @EnableAutoConfiguration
 @SpringBootTest(classes = Application.class)
 @ExtendWith(SpringExtension.class)
+@Disabled("Disabled until the surefire configuration/dependency issue is resolved to run these tests")
 public class ESCRUDTests {
 
 	@Autowired
@@ -62,7 +64,7 @@ public class ESCRUDTests {
 	@Value("${elasticsearch.indices.contacts}")
 	private String CONTACT_INDEX;
 	
-	@BeforeEach
+//	@BeforeEach
 	void createESElement () {
 		EventES eventEs = new EventES();
 		eventEs.setId("100");
