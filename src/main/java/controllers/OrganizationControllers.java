@@ -131,7 +131,7 @@ public class OrganizationControllers {
 				
 		return jdbcTemplate.queryForList(sql, LocalDateTime.now());
 	}
-	@JsonView(View.OrgDetail.class)
+	@JsonView(View.OrgSummary.class)
 	@GetMapping("/organizations")
 	public List<Organization> getAllOrgs(){
 		return orgService.getAllOrganizations();
@@ -147,7 +147,6 @@ public class OrganizationControllers {
 		Page<Organization> pagedOrgs = orgRepository.findAll(pageable);
 		return pagedOrgs;
 	}
-	
 	
 	@GetMapping("/orgs-filtered-sorted/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}")
 	Page<Organization> getFilteredSortedOrgs(@PathVariable Integer pageNumber, @PathVariable Integer pageElements,
@@ -166,7 +165,7 @@ public class OrganizationControllers {
 			}
 		}
 		else { //default sort 
-			pageable = PageRequest.of(pageNumber, pageElements, Sort.by("county.countyDesc").ascending());
+			pageable = PageRequest.of(pageNumber, pageElements, Sort.by("orgname").ascending());
 		}
 		
 		
@@ -231,7 +230,7 @@ public class OrganizationControllers {
 	
 	@JsonView(View.OrgDetail.class)
 	@GetMapping("/organizations/{id}")
-	public Organization getCustomerDetail(@PathVariable Long id) throws ClassNotFoundException {
+	public Organization getOrgDetail(@PathVariable Long id) throws ClassNotFoundException {
 		return orgService.getOrgById(id);
 	}
 	

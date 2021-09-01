@@ -51,14 +51,14 @@ public class CallLogControllers {
 	@Autowired
 	CallLogService callLogService;
 	
-	@GetMapping("/callLogs")
+	@GetMapping("/only-callLogs-export")
 	List<CallLog> getCallLogs(){
 		return callLogRepository.findAll();
 	}
 	
-	@GetMapping("/myCallLogs")
+	@GetMapping("/only-my-callLogs-export")
 	List<CallLog> myCallLogs(@AuthenticationPrincipal Presenter presenter){					
-		return callLogRepository.findBycreatedBy(presenter);
+		return callLogRepository.findByCreatedBy(presenter);
 	}
 	
 	@GetMapping("/callLog-detail/{callId}")
@@ -116,18 +116,19 @@ public class CallLogControllers {
 	}
 	
 	@GetMapping("/call-logs-sorted-default")
-	public Page<CallLog> getMyDefaultCallLogs () {
+	public Page<CallLog> getMyDefaultCallLogs (@AuthenticationPrincipal Presenter user) {
 		final int pageNumber = 0;
 		final int pageElements = 10;
 		Pageable pageable = PageRequest.of(pageNumber, pageElements, Sort.by("createDate").descending());
-		Page<CallLog> callLogs = callLogRepository.findAll(pageable);
+		Page<CallLog> callLogs = callLogRepository.findByCreatedBy(user, pageable);
 		return callLogs;
 	}
 	
-	@GetMapping("/call-logs-filtered-sorted/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}/{from}/{to}")
+	@GetMapping("/call-logs-filtered-sorted/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}/{from}/{to}/{onlyMyCallLogs}")
 	public Page<CallLog> getCustomCallLogs (@PathVariable Integer pageNumber, @PathVariable Integer pageElements, 
 			@PathVariable String fieldName, @PathVariable String sortOrder, @PathVariable String from, @PathVariable String to, 
-			@AuthenticationPrincipal Presenter user, @RequestParam(value="status", required=false) String [] callLogStatuses) {
+			@PathVariable Boolean onlyMyCallLogs, @AuthenticationPrincipal Presenter user, 
+			@RequestParam(value="status", required=false) String [] callLogStatuses) {
 		
 		Pageable pageable = null;
 		Page<CallLog> callLogs = null;
@@ -163,19 +164,40 @@ public class CallLogControllers {
 			}
 		}
 		
-		if (statuses.size() > 0 && fromLMDDate != null && toLMDDate != null) {
-			callLogs = callLogRepository.findByCreatedByAndStatusInAndLastModifiedDateBetween(user, statuses, fromLMDDate, toLMDDate, pageable);
+		if (onlyMyCallLogs) {
+			
+			if (statuses.size() > 0 && fromLMDDate != null && toLMDDate != null) {
+				callLogs = callLogRepository.findByCreatedByAndStatusInAndLastModifiedDateBetween(user, statuses, fromLMDDate, toLMDDate, pageable);
+			}
+			
+			else if (statuses.size() > 0 && fromLMDDate == null && toLMDDate == null) {
+				callLogs = callLogRepository.findByCreatedByAndStatusIn(user, statuses, pageable);
+			}
+			
+			else if (statuses.size() < 1 && fromLMDDate != null && toLMDDate != null) {
+				callLogs = callLogRepository.findByCreatedByAndLastModifiedDateBetween(user, fromLMDDate, toLMDDate, pageable);
+			}
+			else {
+				callLogs = callLogRepository.findByCreatedBy(user, pageable);
+			}
 		}
 		
-		else if (statuses.size() > 0 && fromLMDDate == null && toLMDDate == null) {
-			callLogs = callLogRepository.findByCreatedByAndStatusIn(user, statuses, pageable);
-		}
-		
-		else if (statuses.size() < 1 && fromLMDDate != null && toLMDDate != null) {
-			callLogs = callLogRepository.findByCreatedByAndLastModifiedDateBetween(user, fromLMDDate, toLMDDate, pageable);
-		}
 		else {
-			callLogs = callLogRepository.findAll(pageable);
+			
+			if (statuses.size() > 0 && fromLMDDate != null && toLMDDate != null) {
+				callLogs = callLogRepository.findByStatusInAndLastModifiedDateBetween(statuses, fromLMDDate, toLMDDate, pageable);
+			}
+			
+			else if (statuses.size() > 0 && fromLMDDate == null && toLMDDate == null) {
+				callLogs = callLogRepository.findByStatusIn(statuses, pageable);
+			}
+			
+			else if (statuses.size() < 1 && fromLMDDate != null && toLMDDate != null) {
+				callLogs = callLogRepository.findByLastModifiedDateBetween(fromLMDDate, toLMDDate, pageable);
+			}
+			else {
+				callLogs = callLogRepository.findAll(pageable);
+			}
 		}
 		
 		return callLogs;

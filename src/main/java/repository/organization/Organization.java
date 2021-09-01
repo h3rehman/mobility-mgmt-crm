@@ -37,33 +37,33 @@ import repository.status.Status;
 @Table(name="Organization")
 public class Organization {
 	
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="OrgID")
 	Long orgId;
 	
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	String orgname;
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	String address;
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	String city;
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	String email;
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	String phone;
 	String altphone;
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	String zip;
 	
 	@Column(name = "laststatusdate", columnDefinition = "TIMESTAMP")
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	private LocalDateTime lastContact;
 	
 	@ManyToOne
 	@JoinColumn(name = "laststatusID")
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	Status lastStatus;
 	
 	@OneToMany(cascade=CascadeType.ALL)
@@ -126,7 +126,7 @@ public class Organization {
 		this.orgContacts = orgContacts;
 	}
 	
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	public List<Contact> getOrgContacts() {
 		List<Contact> contacts = new ArrayList<>();
 		for (OrganizationContact co : orgContacts) {
@@ -150,7 +150,7 @@ public class Organization {
 	public String getZip() {
 		return zip;
 	}
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	public String getCountyName() {
 		return county.getCountyDesc();
 	}
