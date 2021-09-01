@@ -38,7 +38,12 @@ public class ContactControllers {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 	
-
+	@GetMapping("/all-contacts-export")
+	public List<Contact> getAllContacts(){
+		List<Contact> contacts = contactRepository.findAll();
+		return contacts;
+	}
+	
 	@GetMapping("/contacts-sorted-default")
 	public Page<Contact> getDefaultSortedContacts(){
 		final int pageNumber = 0;

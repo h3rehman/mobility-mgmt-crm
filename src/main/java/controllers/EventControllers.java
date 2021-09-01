@@ -122,6 +122,16 @@ public class EventControllers {
 		return eventService.myUpcomingAppointments(user.getPresenterId());
 	}
 	
+	@GetMapping("/all-my-events-export")
+	List<Event> getAllMyEvents(@AuthenticationPrincipal Presenter user){
+		List<Eventpresenter> myEventsPres = eventPresenterRepository.findByPresenter(user);
+		List<Event> eventList = new ArrayList<Event>();
+		for (Eventpresenter evePresenter : myEventsPres) {
+			eventList.add(evePresenter.getEvent());
+		}
+		return eventList;
+	}
+	
 	@GetMapping("/sorted-default-myevents")
 	Page<Event> getMyDefaultUpcomingEvents(@AuthenticationPrincipal Presenter user) {
 		

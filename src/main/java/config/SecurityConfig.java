@@ -141,7 +141,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	    	    .and()
 	    	    	.logout()
 	    	    	.logoutUrl(logoutUrl)
-	    	    	.logoutSuccessUrl("https://stagemmoutreach.rtachicago.org")
+	    	    	.logoutSuccessUrl("https://mmoutreach.rtachicago.org")
 	    	    .and();
 	    }
 	

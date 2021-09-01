@@ -1,6 +1,7 @@
 package controllers;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,10 +20,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import repository.calllog.CallLog;
+import repository.calllog.CallLogRepository;
 import repository.event.Event;
 import repository.event.EventRepository;
 import repository.event.presenter.Presenter;
@@ -49,6 +53,9 @@ public class NoteControllers {
 	
 	@Autowired
 	ContactRepository contactRepository;
+	
+	@Autowired
+	CallLogRepository callLogRepository;
 
 	@Autowired
 	NoteService noteService;
@@ -59,6 +66,32 @@ public class NoteControllers {
 	NoteControllers (DataSource dataSource){
 		this.dataSource = dataSource;
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	}
+	
+	@GetMapping("/all-my-callLogs-export")
+	List<Note> getAllMyCallLogNotes(@AuthenticationPrincipal Presenter user){
+		return noteRepository.findByCreatedByAndCallLogIsNotNull(user);
+	}
+	
+	@GetMapping("/all-callLogs-export")
+	List<Note> getAllCallLogNotes(){
+		return noteRepository.findByCallLogIsNotNull();
+	}
+	
+	@GetMapping("/callLogs-view-export")
+	List<Note> getCurrentViewCallLogNotes(@RequestParam(value="cid", required=false) String [] callLogIds){
+		List<CallLog> callLogsList = new ArrayList<CallLog>();
+		if (callLogIds != null) {
+			for (int i=0; i<callLogIds.length; i++) {
+				Optional<CallLog> callLogOpt = callLogRepository.findById(Long.parseLong(callLogIds[i]));
+				if (callLogOpt != null) {
+					CallLog callLog = callLogOpt.get();
+					callLogsList.add(callLog);
+				}
+			}
+			return noteRepository.findByCallLogIn(callLogsList);
+		}
+		return null;
 	}
 	
 	@GetMapping("/org/notes/{orgId}")

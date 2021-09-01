@@ -48,5 +48,7 @@ public interface EventPresenterRepository extends JpaRepository<Eventpresenter, 
 	public Page<Eventpresenter> findByPresenterAndEventLastStatusIn(Presenter user, List<Status> lastStatuses, Pageable pageable);
 	
 	public Page<Eventpresenter> findByPresenter(Presenter user, Pageable pageable);
+	
+	public List<Eventpresenter> findByPresenter(Presenter user);
 
 }

@@ -29,23 +29,23 @@ public class Contact {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="ContactID")
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	Long contactId;
 	
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	@Column(name="firstname")
 	String firstName;
 	
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	@Column(name="lastname")
 	String lastName;
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	String title;
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	String email;
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	String phone;
-	@JsonView(View.OrgDetail.class)
+	@JsonView({View.OrgDetail.class, View.OrgSummary.class})
 	@Column(name="altphone")
 	String altPhone;
 	

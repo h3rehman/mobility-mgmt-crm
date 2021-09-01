@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import repository.organization.county.County;
 import repository.status.Status;
 
@@ -29,9 +31,9 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
 	List<Organization> findBycountyAndorgnameAllIgnoreCase (@Param("county") String county, @Param("name") String orgName);
 	
 	Page<Organization> findAllBycountyIn(List<County> counties, Pageable pageable);
-	
+
 	Page<Organization> findByCountyInAndLastStatusIn(List<County> counties, List<Status> statuses, Pageable pageable);
-	
+
 	Page<Organization> findAllBylastStatusIn(List<Status> statuses, Pageable pageable);
 
 }

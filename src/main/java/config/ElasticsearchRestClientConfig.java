@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration.MaybeSecureClientConfigurationBuilder;
 import org.springframework.data.elasticsearch.client.RestClients;
@@ -34,9 +35,21 @@ public class ElasticsearchRestClientConfig extends AbstractElasticsearchConfigur
 	@Value("${elasticsearch.superuser.password}")
 	private String esSUPassword;
 	
-	@Override
-    @Bean
+	@Bean
+    @Profile("dev")
     public RestHighLevelClient elasticsearchClient() {
+
+        final ClientConfiguration clientConfiguration = ((MaybeSecureClientConfigurationBuilder) ClientConfiguration.builder()  
+            .connectedTo(esHost + ":" + esPort)
+            .withBasicAuth(esSuperuser, esSUPassword))
+            .build();
+
+        return RestClients.create(clientConfiguration).rest();                         
+    }
+	
+	@Bean
+    @Profile("prod")
+    public RestHighLevelClient elasticsearchProdClient() {
 
         final ClientConfiguration clientConfiguration = ((MaybeSecureClientConfigurationBuilder) ClientConfiguration.builder()  
             .connectedTo(esHost + ":" + esPort)
@@ -46,6 +59,5 @@ public class ElasticsearchRestClientConfig extends AbstractElasticsearchConfigur
 
         return RestClients.create(clientConfiguration).rest();                         
     }
-	
 
 }
