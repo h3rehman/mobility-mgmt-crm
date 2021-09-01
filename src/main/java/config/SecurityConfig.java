@@ -178,7 +178,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	 
 	 //For pointing back to React app after authentication
 	 @Bean
-	 @Profile("dev")
 	 public RequestCache refererRequestCache() {
 	        return new HttpSessionRequestCache() {
 	            @Override
