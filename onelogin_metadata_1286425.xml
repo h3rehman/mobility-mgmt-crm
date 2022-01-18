@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="https://app.onelogin.com/saml/metadata/b7421086-3aaf-4a82-84f8-8ecce222037a">
+<EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="https://app.onelogin.com/saml/metadata/4755e5df-252b-44c9-a033-bef56b71ec16">
   <IDPSSODescriptor xmlns:ds="http://www.w3.org/2000/09/xmldsig#" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
     <KeyDescriptor use="signing">
       <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
@@ -30,12 +30,12 @@ dSdBONsOcOk2Z0nkGoziBA==</ds:X509Certificate>
         </ds:X509Data>
       </ds:KeyInfo>
     </KeyDescriptor>
-    <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://rtachicago.onelogin.com/trust/saml2/http-redirect/slo/1267202"/>
+    <SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://rtachicago.onelogin.com/trust/saml2/http-redirect/slo/1286425"/>
     
       <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</NameIDFormat>
     
-    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://rtachicago.onelogin.com/trust/saml2/http-redirect/sso/b7421086-3aaf-4a82-84f8-8ecce222037a"/>
-    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://rtachicago.onelogin.com/trust/saml2/http-post/sso/b7421086-3aaf-4a82-84f8-8ecce222037a"/>
-    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://rtachicago.onelogin.com/trust/saml2/soap/sso/b7421086-3aaf-4a82-84f8-8ecce222037a"/>
+    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://rtachicago.onelogin.com/trust/saml2/http-redirect/sso/4755e5df-252b-44c9-a033-bef56b71ec16"/>
+    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://rtachicago.onelogin.com/trust/saml2/http-post/sso/4755e5df-252b-44c9-a033-bef56b71ec16"/>
+    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://rtachicago.onelogin.com/trust/saml2/soap/sso/4755e5df-252b-44c9-a033-bef56b71ec16"/>
   </IDPSSODescriptor>
 </EntityDescriptor>
