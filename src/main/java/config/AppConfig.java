@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import repository.event.presenter.Presenter;
 import user.User;
@@ -60,6 +62,15 @@ public class AppConfig implements WebMvcConfigurer {
 	@Autowired
 	DataSource dataSource;
 	
+	@Bean
+	public JavaMailSender javaMailSender() {
+		return new JavaMailSenderImpl();
+	}
+	
+	@Bean
+	public MailConfig mailConfig() {
+		return new MailConfig();
+	}
 		
 //	@Bean
 //	 public DataSource dataSource(

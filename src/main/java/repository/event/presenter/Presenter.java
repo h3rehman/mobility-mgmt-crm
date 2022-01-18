@@ -13,6 +13,8 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import repository.calllog.CallLog;
+
 @Entity
 @Table(name = "Presenter")
 public class Presenter {
@@ -32,8 +34,6 @@ public class Presenter {
 	@JsonIgnore
 	public List<Eventpresenter> eventPresenters;
 	
-	public Presenter(){}
-	
 	@Column(name = "lastname")
 	private String lastName;
 	
@@ -42,12 +42,9 @@ public class Presenter {
 	
 	@Column(name = "username")
 	private String username;
-	
-	Presenter(String name){
-		this.name = name;
-		this.isActive = true;
-	}
 
+	public Presenter(){}
+	
 	public Long getPresenterId() {
 		return presenterId;
 	}

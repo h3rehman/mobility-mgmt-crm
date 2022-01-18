@@ -4,18 +4,28 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
+import config.MailConfig;
+import repository.elasticsearch.EventESRepository;
 import repository.event.Event;
 import repository.event.EventRepository;
 import repository.event.Eventtype;
 import repository.event.EventtypeRepository;
+import repository.event.audience.Audiencetype;
+import repository.event.audience.AudiencetypeRepository;
+import repository.event.audience.Eventaudiencetype;
+import repository.event.audience.EventaudiencetypeRepository;
 import repository.event.presenter.EventPresenterRepository;
 import repository.event.presenter.Eventpresenter;
 import repository.event.presenter.Presenter;
@@ -24,6 +34,11 @@ import repository.organization.EventOrganization;
 import repository.organization.EventOrganizationRepository;
 import repository.organization.Organization;
 import repository.organization.OrganizationRepository;
+import repository.status.Status;
+import repository.status.StatusRepository;
+import services.calendar.CalendarRequest;
+import services.calendar.CalendarService;
+import services.elasticsearch.IndexingService;
 
 @Service
 public class EventService {
@@ -45,6 +60,30 @@ public class EventService {
 	
 	@Autowired
 	EventPresenterRepository eventPresenterRepository;
+	
+	@Autowired
+	AudiencetypeRepository audienceTypeRepository;
+	
+	@Autowired
+	EventaudiencetypeRepository eventAudienceTypeRepository;
+	
+	@Autowired
+	StatusRepository statusRepository;
+	
+	@Autowired
+	EventESRepository eventEsRepository;
+	
+	@Autowired
+	CalendarService calendarService;
+	
+	@Autowired
+	MailConfig mailConfig;
+	
+	@Autowired
+	JavaMailSenderImpl mailSender;
+	
+	@Autowired
+	IndexingService indexingService;
 	
 	public List<Event> getAllEvents(){
 		return eventRepository.findAll();
@@ -77,13 +116,40 @@ public class EventService {
 		return optEvent.orElseThrow(() -> new ClassNotFoundException("There is no Event with the id: " + id));
 	}
 
-	public void addEvent(Event eve, String eventTypeDesc, String orgId, Long presenterId, boolean joinEve) {
+	public void addEvent(Event eve, String eventTypeDesc, String orgId, 
+			Long presenterId, boolean joinEve, Long[] audTypes, String lastStatus) throws Exception {
+
+		Status status = null;
+		if (lastStatus != null) {
+			status = statusRepository.findBystatusDesc(lastStatus);
+			if (status != null) {
+				eve.setLastStatus(status);
+			}
+			else {
+				Optional<Status> optionalStatus = statusRepository.findById(8L);//Id for Info Needed Status
+				if (optionalStatus != null) {
+					status = optionalStatus.get();
+					eve.setLastStatus(status);
+				}
+			}
+		}
+		else {
+			Optional<Status> optionalStatus = statusRepository.findById(8L); //Id for Info Needed Status
+			if (optionalStatus != null) {
+				status = optionalStatus.get();
+				eve.setLastStatus(status);
+			}
+		}
 		Eventtype eventType = eventtypeRepository.findByeventTypeDesc(eventTypeDesc);
-		System.out.println("###################################");
-		System.out.println("Event Desc is: " + eventType.getEventTypeDesc());
-		System.out.println("###################################");
 		eve.setEventType(eventType);
 		eventRepository.save(eve);
+		
+		//insert in elasticsearch events index
+		indexingService.createUpdateAndDeleteIndexElements("POST", eve, null, null);
+		
+		if (audTypes != null) {				
+			addAudienceTypes(audTypes, eve);
+		}
 		
 		//Associate Org:
 		Long oId = Long.parseLong(orgId);
@@ -95,7 +161,9 @@ public class EventService {
 				eveOrg.setEvent(eve);
 				eveOrg.setOrganization(org);
 				eventOrgRepository.save(eveOrg);
-				System.out.println("##### NEW EVENT CREATED, Event ID: " + eve.getEventId() + " " + "associated Org Id: " + org.getOrgId());
+				
+				org.setLastStatus(status);
+				orgRepository.save(org);
 			}
 		}
 		
@@ -103,16 +171,20 @@ public class EventService {
 		if (joinEve != false && presenterId != null) {
 			joinEvent(eve.getEventId(), presenterId);
 		}
-		
-		System.out.println("### New Event created with ID: " + eve.getEventId());
+	  System.out.println("### New Event created with ID: " + eve.getEventId());
 	}
 
-	public void updateEvent(Event eve, String eventTypeDesc, String orgId) {
+
+	public void updateEvent(Event eve, String eventTypeDesc, 
+			String orgId, Long[] audTypes, String lastStatus) {
 		Eventtype eventType = eventtypeRepository.findByeventTypeDesc(eventTypeDesc);
 		Optional<Event> optionalEvent = eventRepository.findById(eve.getEventId());
 		
 		Long oId = Long.parseLong(orgId);
-		
+		Status status = null;
+		if (lastStatus != null || lastStatus != "") {
+		status = statusRepository.findBystatusDesc(lastStatus);
+		}
 		if (optionalEvent != null) {
 			Event eveOriginal = optionalEvent.get();
 			eveOriginal.setEventType(eventType);
@@ -126,28 +198,52 @@ public class EventService {
 			eveOriginal.setRtaStaffCount(eve.getRtaStaffCount());
 			eveOriginal.setState(eve.getState());
 			eveOriginal.setZip(eve.getZip());
+			
+			if (status != null) {
+				eveOriginal.setLastStatus(status);
+			}
+
 			eventRepository.save(eveOriginal);
+			
+			//updating elasticsearch events index
+			indexingService.createUpdateAndDeleteIndexElements("PUT", eveOriginal, null, null);
+			
+			if (audTypes != null) {				
+				addAudienceTypes(audTypes, eveOriginal);
+			}
+				
 			if (oId > 0) {
 				Optional<Organization> optionalOrg = orgRepository.findById(oId);
 				if(optionalOrg != null) {
-					HashMap<Long, String> associatedOrgs = eveOriginal.getOrgNames();
+					Organization org = optionalOrg.get();
+					
+					HashMap<Long, String> associatedOrgs = eveOriginal.eventOrgNames();
 					if (!associatedOrgs.containsKey(oId)) {  //only add if the Organization does not exist. 
-						Organization org = optionalOrg.get();
 						EventOrganization eveOrg = new EventOrganization();
 						eveOrg.setEvent(eveOriginal);
 						eveOrg.setOrganization(org);
-						eventOrgRepository.save(eveOrg);					
+						eventOrgRepository.save(eveOrg);
+						org.setLastStatus(status);
+						orgRepository.save(org);
 					}
+				}
+			}
+			//Update Last Status of each Org associated with this event
+			List<Organization> orgs = eveOriginal.orgsInEvent();
+			if (orgs.size() > 0 && status != null) {
+				for (int i=0; i<orgs.size(); i++) {
+					Organization org = orgs.get(i);
+					org.setLastStatus(status);
+					orgRepository.save(org);
 				}
 			}
 		}
 		else {
 			System.out.println("Event is null");
-		}
-		
+		}	
 	}
 
-	public void joinEvent(Long eventId, Long presenterId) {
+	public void joinEvent(Long eventId, Long presenterId) throws Exception {
 		Optional<Event> optionalEvent = eventRepository.findById(eventId);
 		Optional<Presenter> optionalPresenter = presenterRepository.findById(presenterId);
 		
@@ -158,6 +254,7 @@ public class EventService {
 			evePresenter.setEvent(event);
 			evePresenter.setPresenter(presenter);
 			eventPresenterRepository.save(evePresenter);
+			sendJoinedEventInvite(event, presenter);
 		}
 		
 		else {
@@ -165,4 +262,96 @@ public class EventService {
 		}		
 	}
 	
+	void addAudienceTypes(Long[] audTypes, Event event) {
+		for (int i=0; i<audTypes.length; i++) {
+			Optional<Audiencetype> optionalAudType = audienceTypeRepository.findById(audTypes[i]);
+			if (optionalAudType != null) {
+				Audiencetype originalAudType = optionalAudType.get();
+				Eventaudiencetype eveAud = new Eventaudiencetype();
+				eveAud.setEvent(event);
+				eveAud.setAudienceType(originalAudType);
+				eventAudienceTypeRepository.save(eveAud);
+			}
+		}
+	}
+	
+	public void sendEventInvite(String subject, String message, Long[] presenterIds, String eventLocation, 
+			Long eventId, Presenter sender) throws Exception {
+		
+		    mailSender.setUsername(mailConfig.getUsername());
+		    mailSender.setPassword(mailConfig.getPassword());
+		    Properties properties = new Properties();
+		    properties.put("mail.smtp.auth", mailConfig.getSmtpAuthRequire());
+		    properties.put("mail.smtp.starttls.enable", mailConfig.getSmtpTLSRequire());
+		    properties.put("mail.smtp.ssl.trust", mailConfig.getExchangeServer());
+		    properties.put("mail.smtp.host", mailConfig.getExchangeServer());
+		    properties.put("mail.smtp.port", mailConfig.getSmtpPort());
+		    mailSender.setJavaMailProperties(properties);
+		    
+		    String emailBody = "Sender: " + sender.getName() + " " + sender.getLastName() + " \n " +
+		    					"Note from Sender: " + message;
+		    
+			Optional<Event> optionalEvent = eventRepository.findById(eventId);
+			
+			if (optionalEvent != null) {
+				Event event = optionalEvent.get();
+				for (int i=0; i<presenterIds.length; i++) {
+				
+					Optional<Presenter> optionalPresenter = presenterRepository.findById(presenterIds[i]);
+					if (optionalPresenter != null) {
+						
+						Presenter presenter = optionalPresenter.get();
+						Eventpresenter evePresenter = eventPresenterRepository.findByEventAndPresenter(event, presenter);
+						if (evePresenter == null) {
+							Eventpresenter evePres = new Eventpresenter();
+							evePres.setEvent(event);
+							evePres.setPresenter(presenter);
+							eventPresenterRepository.save(evePres);
+							System.out.println("#### Added new Event Presenter ####: " + presenter.getName());
+						}
+						else { 
+							System.out.println("#### Event Presenter already exist: " + presenter.getName());
+						}
+						calendarService.sendCalendarInvite(
+								mailConfig.getFromEmail(),
+								new CalendarRequest.Builder()
+								.withSubject(subject)
+								.withBody(emailBody)
+								.withToEmail(presenter.getEmail())
+								.withMeetingStartTime(event.getStartDateTime())
+								.withMeetingEndTime(event.getEndDateTime())
+								.withLocation(eventLocation)
+								.build()
+								);
+					}
+				}
+			}
+	}
+
+	public void sendJoinedEventInvite(Event event, Presenter presenter) throws Exception {
+		
+		    mailSender.setUsername(mailConfig.getUsername());
+		    mailSender.setPassword(mailConfig.getPassword());
+		    Properties properties = new Properties();
+		    properties.put("mail.smtp.auth", mailConfig.getSmtpAuthRequire());
+		    properties.put("mail.smtp.starttls.enable", mailConfig.getSmtpTLSRequire());
+		    properties.put("mail.smtp.ssl.trust", mailConfig.getExchangeServer());
+		    properties.put("mail.smtp.host", mailConfig.getExchangeServer());
+		    properties.put("mail.smtp.port", mailConfig.getSmtpPort());
+		    mailSender.setJavaMailProperties(properties);
+		    
+		    String emailBody = "Event Type: " +  event.getEventTypeDesc();
+		    
+			calendarService.sendCalendarInvite(
+					mailConfig.getFromEmail(),
+					new CalendarRequest.Builder()
+					.withSubject(event.getEventName())
+					.withBody(emailBody)
+					.withToEmail(presenter.getEmail())
+					.withMeetingStartTime(event.getStartDateTime())
+					.withMeetingEndTime(event.getEndDateTime())
+					.withLocation(event.getLocation())
+					.build()
+					);
+		}
 }

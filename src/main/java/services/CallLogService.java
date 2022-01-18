@@ -38,6 +38,7 @@ public class CallLogService {
 	@Autowired
 	StatusRepository statusRepository;
 	
+	
 	public void addChangeLog(Note note, Presenter user, Long orgId, Long contactId, 
 		Long lastStatusId, String requestType) {
 		
@@ -79,6 +80,15 @@ public class CallLogService {
 				Optional<Organization> optionalOrg = orgRepository.findById(orgId);
 				if (optionalOrg != null) {
 					Organization org = optionalOrg.get();
+					if (lastStatusId != -1) {
+						Optional<Status> optionalStatus = statusRepository.findById(lastStatusId);
+						if (optionalStatus != null) {
+							Status lastStatus = optionalStatus.get();
+							org.setLastStatus(lastStatus);
+							org.setLastContact(currentTime);
+							orgRepository.save(org);
+						}
+					}
 					callLog.setOrg(org);
 					note.setOrg(org);
 				}
@@ -87,6 +97,8 @@ public class CallLogService {
 				Optional<Contact> optionalContact = contactRepository.findById(contactId);
 				if (optionalContact != null) {
 					Contact contact = optionalContact.get();
+					contact.setLastContactDate(currentTime);
+					contactRepository.save(contact);
 					callLog.setContact(contact);
 				}
 			}

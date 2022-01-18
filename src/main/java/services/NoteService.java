@@ -18,6 +18,8 @@ import repository.note.Note;
 import repository.note.NoteRepository;
 import repository.organization.Organization;
 import repository.organization.OrganizationRepository;
+import repository.organization.contact.Contact;
+import repository.organization.contact.ContactRepository;
 
 @Service
 public class NoteService {
@@ -31,6 +33,9 @@ public class NoteService {
 	@Autowired
 	EventRepository eventRepository;
 	
+	@Autowired
+	ContactRepository contactRepository;
+	
 	DataSource dataSource;
 	JdbcTemplate jdbcTemplate;
 	
@@ -39,8 +44,7 @@ public class NoteService {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 	
-	public void addNote(Note note, Long orgId, Long presenterId, Long eventId) {
-		System.out.println("Finding OrgId: " + orgId);
+	public void addNote(Note note, Long orgId, Long presenterId, Long eventId, Long contactId) {
 		ZoneId central = ZoneId.of("America/Chicago");
 		note.setCreateDate(LocalDateTime.now(central));
 		note.setLastModifiedDate(LocalDateTime.now(central));
@@ -57,6 +61,13 @@ public class NoteService {
 			if (optionalEvent != null) {
 				Event event = optionalEvent.get();
 				note.setEvent(event);
+			}
+		}
+		if (contactId != null) {
+			Optional<Contact> optionalContact = contactRepository.findById(contactId);
+			if (optionalContact != null) {
+				Contact contact = optionalContact.get();
+				note.setContact(contact);
 			}
 		}
 		noteRepository.save(note);

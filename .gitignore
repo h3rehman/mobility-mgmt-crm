@@ -1,5 +1,6 @@
 HELP.md
 target/
+app/*
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -9,6 +10,23 @@ dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
+
+### Local Config ###
+*.yml
+/src/main/resources/*.xml
+/src/main/resources/*.yml
+/src/main/resources/onelogin/*
+/src/main/resources/*.jks
+/src/main/resources/*.pfx
+/src/main/resources/*.crt
+/src/main/resources/*.p12
+*.jks
+*.pfx
+*.crt
+*.p12
+
+### Node files ###
+/src/main/resources/static/*
 
 ### STS ###
 .apt_generated
@@ -35,3 +53,6 @@ build/
 
 ### VS Code ###
 .vscode/
+/app/
+/app/
+/app/
