@@ -16,7 +16,10 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,13 +30,22 @@ import repository.event.presenter.Presenter;
 @RequestMapping("/api")
 public class ManagerialAccessControllers {
 	
-	private final static String ONELOGIN_CLIENT_ID = "bb14892952d6d89c358739465170258b4642ef0743af6c5a032a35e8b1f5b40f";
-	private final static String ONELOGIN_CLIENT_SECRET = "0759b0386eccd65975a01a66eb6835a36c3f285a0a785d07fb2eeab77e4e350d";
+	private static String ONELOGIN_CLIENT_ID;
+	private static String ONELOGIN_CLIENT_SECRET;
 	private static String access_token;
-	private String managerial_role_id = "454872";
+	private String managerial_role_id;
+	
+	
+	ManagerialAccessControllers(@Value("${onelogin.api.client_id}") String cid,  
+								@Value("${onelogin.api.client_secret}") String csec,
+								@Value("${onelogin.api.managerial_role_id}") String manRoleId){
+		ONELOGIN_CLIENT_ID = cid;
+		ONELOGIN_CLIENT_SECRET = csec;
+		this.managerial_role_id = manRoleId;
+	}
 	
 	static String getOLAccessToken() {
-	
+		System.out.println("########## Getting OL Acess token: " + ONELOGIN_CLIENT_ID);
 		CloseableHttpClient client = HttpClientBuilder.create().build();
 
 		HttpPost request = new HttpPost("https://api.us.onelogin.com/auth/oauth2/v2/token");
@@ -79,6 +91,7 @@ public class ManagerialAccessControllers {
 			request.setHeader("Authorization", "bearer " + access_token);
 			HttpResponse response = client.execute(request);
 			
+			//get a fresh access token if the token expired. 
 			if (response.getStatusLine().getStatusCode() != 200) {
 				access_token = getOLAccessToken();
 				request.setHeader("Authorization", "bearer " + access_token);
