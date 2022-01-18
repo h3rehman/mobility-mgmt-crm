@@ -26,7 +26,7 @@ buildNumber.properties
 *.p12
 
 ### Node files ###
-.src/main/resources/static/**
+.src/main/resources/static/*
 
 ### STS ###
 .apt_generated
