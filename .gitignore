@@ -13,13 +13,13 @@ buildNumber.properties
 
 ### Local Config ###
 *.yml
-.src/main/resources/*.xml
-.src/main/resources/*.yml
-.src/main/resources/onelogin/*
-.src/main/resources/*.jks
-.src/main/resources/*.pfx
-.src/main/resources/*.crt
-.src/main/resources/*.p12
+/src/main/resources/*.xml
+/src/main/resources/*.yml
+/src/main/resources/onelogin/*
+/src/main/resources/*.jks
+/src/main/resources/*.pfx
+/src/main/resources/*.crt
+/src/main/resources/*.p12
 *.jks
 *.pfx
 *.crt
