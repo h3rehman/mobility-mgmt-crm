@@ -9,6 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import repository.organization.Organization;
 
 @Entity
@@ -41,7 +43,8 @@ public class County {
 		this.countyDesc = countyDesc;
 	}
 
-	public Set<Organization> getCustomers() {
+	@JsonIgnore
+	public Set<Organization> getOrganizations() {
 		return organizations;
 	}
 	

@@ -3,6 +3,7 @@ package controllers;
 import java.net.URI;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,9 +11,14 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,8 +36,16 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import repository.organization.View;
 import repository.organization.contact.Contact;
+import repository.organization.contact.ContactRepository;
 import repository.organization.contact.OrganizationContactRepository;
+import repository.organization.county.County;
+import repository.organization.county.CountyRepository;
+import repository.status.Status;
+import repository.status.StatusRepository;
 import services.OrganizationService;
+import repository.event.Event;
+import repository.event.Eventtype;
+import repository.event.presenter.Presenter;
 import repository.organization.Organization;
 import repository.organization.OrganizationRepository;
 
@@ -53,12 +67,19 @@ public class OrganizationControllers {
 	OrganizationContactRepository orgContactRepository;
 	
 	@Autowired
+	CountyRepository countyRepository;
+	
+	@Autowired
+	StatusRepository statusRepository;
+	
+	@Autowired
+	ContactRepository contactRepository;
+	
+	@Autowired
 	OrganizationControllers (DataSource dataSource){
 		this.dataSource = dataSource;
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
-	
-
 	
 	@GetMapping("/accounts")
 	public String accounts() throws SQLException{
@@ -110,10 +131,85 @@ public class OrganizationControllers {
 				
 		return jdbcTemplate.queryForList(sql, LocalDateTime.now());
 	}
-	@JsonView(View.OrgDetail.class)
+	@JsonView(View.OrgSummary.class)
 	@GetMapping("/organizations")
-	public List<Organization> getCustomers(){
+	public List<Organization> getAllOrgs(){
 		return orgService.getAllOrganizations();
+	}
+	
+	
+	@GetMapping("/orgs-sorted-default")
+	Page<Organization> getOrgsDefault () {
+		final int pageNumber = 0;
+		final int pageElements = 10;
+		Pageable pageable = PageRequest.
+				of(pageNumber, pageElements, Sort.by("orgname").ascending());
+		Page<Organization> pagedOrgs = orgRepository.findAll(pageable);
+		return pagedOrgs;
+	}
+	
+	@GetMapping("/orgs-filtered-sorted/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}")
+	Page<Organization> getFilteredSortedOrgs(@PathVariable Integer pageNumber, @PathVariable Integer pageElements,
+			@PathVariable String fieldName, @PathVariable String sortOrder,
+			@RequestParam(value="county", required=false) String [] counties,
+			@RequestParam(value="status", required=false) String [] statuses){
+		
+		Page<Organization> orgs = null;
+		Pageable pageable = null;
+		if (!fieldName.equalsIgnoreCase("null")) {
+			if (sortOrder.equalsIgnoreCase("asce") || sortOrder.equalsIgnoreCase("null") ) {
+				pageable = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).ascending());
+			}
+			else {
+				pageable = PageRequest.of(pageNumber, pageElements, Sort.by(fieldName).descending());
+			}
+		}
+		else { //default sort 
+			pageable = PageRequest.of(pageNumber, pageElements, Sort.by("orgname").ascending());
+		}
+		
+		
+		List<County> confirmedCounties = new ArrayList<County>();
+		if (counties != null) {
+			for (int i=0; i<counties.length; i++) {
+				County ct = countyRepository.findBycountyDesc(counties[i]);
+				if (ct != null) {
+					confirmedCounties.add(ct);
+				}
+			}
+		}
+		
+		List<Status> confirmedStatuses = new ArrayList<Status>();
+		if (statuses != null) {
+			for (int i=0; i<statuses.length; i++) {
+				Status st = statusRepository.findBystatusDesc(statuses[i]);
+				if (st != null) {
+					confirmedStatuses.add(st);
+				}
+			}
+		}
+		
+		//Option 1:
+		if (confirmedCounties.size() > 0) {
+			//Option 1a:
+			if (confirmedStatuses.size() > 0) {
+				orgs = orgRepository.findByCountyInAndLastStatusIn(confirmedCounties, confirmedStatuses, pageable);
+			}
+			//Option 1b:
+			else {
+				orgs = orgRepository.findAllBycountyIn(confirmedCounties, pageable);
+			}
+		}
+		//Option 2:
+		else if (confirmedStatuses.size() > 0) {
+			orgs = orgRepository.findAllBylastStatusIn(confirmedStatuses, pageable);
+		}
+		//Option 3:
+		else {
+			orgs = orgRepository.findAll(pageable);
+		}
+		
+		return orgs;		
 	}
 	
 	@GetMapping("/contacts")
@@ -134,7 +230,7 @@ public class OrganizationControllers {
 	
 	@JsonView(View.OrgDetail.class)
 	@GetMapping("/organizations/{id}")
-	public Organization getCustomerDetail(@PathVariable Long id) throws ClassNotFoundException {
+	public Organization getOrgDetail(@PathVariable Long id) throws ClassNotFoundException {
 		return orgService.getOrgById(id);
 	}
 	
@@ -172,12 +268,35 @@ public class OrganizationControllers {
 	public void updateOrg(@RequestBody Organization org, @PathVariable String countyName) {
 		orgService.updateOrg(org, countyName);
 	}
+	
+	@PostMapping("/create-update-contact/{orgId}") 
+	@ResponseStatus(HttpStatus.CREATED) // 201
+	public ResponseEntity<Void> createContact(@RequestBody Contact con, @PathVariable String orgId,
+			@AuthenticationPrincipal Presenter user){ 
+		if (user != null) {
+			orgService.createContact(con, orgId, user);
+			
+			// Build the location URI of the new item
+			URI location = ServletUriComponentsBuilder
+					.fromCurrentRequestUri()
+					.path("/{contactId}")
+					.buildAndExpand(con.getContactId())
+					.toUri(); 
+			
+			// Explicitly create a 201 Created response
+			return ResponseEntity.created(location).build();	
+		}
+		System.out.println("Returned null Presenter.. No Contact created.");
+		return null;
+	}
 
-	@PutMapping("/contact")
+	@PutMapping("/create-update-contact/{orgId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
-	public void updateContact(@RequestBody Contact con) {
-		orgService.updateContact(con);
-		
+	public void updateContact(@RequestBody Contact con, @PathVariable String orgId, @AuthenticationPrincipal Presenter user) {
+		if (user != null) {
+			orgService.updateContact(con, user, orgId);
+		}
+		System.out.println("User identity cannot be confirmed... Cannot update contact.");
 	}
 
 	@DeleteMapping("/orgContact/{orgId}/{contactId}")
@@ -187,23 +306,6 @@ public class OrganizationControllers {
 				 	+ "WHERE orgid = ? "
 				 	+ "AND contactid = ?";
 		jdbcTemplate.update(sql, orgId, contactId);
-	}
-	
-	@PostMapping("/orgContact/{orgId}") 
-	@ResponseStatus(HttpStatus.CREATED) // 201
-	public ResponseEntity<Void> createContact(@RequestBody Contact con, @PathVariable String orgId){ 
-		
-		orgService.associateContact(con, orgId);
-		
-		// Build the location URI of the new item
-		 URI location = ServletUriComponentsBuilder
-		 .fromCurrentRequestUri()
-		 .path("/{contactId}")
-		 .buildAndExpand(con.getContactId())
-		 .toUri(); 
-
-		// Explicitly create a 201 Created response
-		 return ResponseEntity.created(location).build();	
 	}
 	
 	@GetMapping("/allorgnames")
@@ -237,5 +339,18 @@ public class OrganizationControllers {
 			}
 		}
 		return null;
+	}
+	
+	@PutMapping("/associate-org-contact/{orgId}/{contactId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT) // 204
+	public void associateOrgContact(@PathVariable Long orgId, @PathVariable Long contactId) {
+		Optional<Contact> optContact = contactRepository.findById(contactId);
+		if (optContact != null) {
+			Contact contact = optContact.get();
+			orgService.associateOrgContact(orgId, contact);
+		}
+		else {
+			System.out.println("Contact for association with Org. is null.....");
+		}
 	}
 }
