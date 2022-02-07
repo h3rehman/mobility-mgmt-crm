@@ -187,7 +187,7 @@ public class ManagerAccessControllers {
 	
 	
 	@GetMapping("/sorted-filtered-presenter-events/{presenterId}/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}/{from}/{to}/{onlyUpcoming}")
-	Page<Event> getMySortedFilteredEvents(Long presenterId, @PathVariable Integer pageNumber, 
+	Page<Event> getMySortedFilteredEvents(@PathVariable Long presenterId, @PathVariable Integer pageNumber, 
 			@PathVariable Integer pageElements, @PathVariable String fieldName, @PathVariable String sortOrder, 
 			@PathVariable String from, @PathVariable String to, @PathVariable Boolean onlyUpcoming,
 			@RequestParam(value="eveType", required=false) String [] eveTypes,
@@ -344,6 +344,20 @@ public class ManagerAccessControllers {
 		return null;
 	}
 	
-	
+	@GetMapping("/all-moc-events-export/{presenterId}")
+	List<Event> getAllMOCEvents(@PathVariable Long presenterId){
+		Optional<Presenter> optionalUser = presenterRepository.findById(presenterId);
+		if (optionalUser != null) {
+			List<Eventpresenter> myEventsPres = eventPresenterRepository.findByPresenter(optionalUser.get());
+			List<Event> eventList = new ArrayList<Event>();
+			for (Eventpresenter evePresenter : myEventsPres) {
+				eventList.add(evePresenter.getEvent());
+			}
+			return eventList;
+		}
+		System.out.println("User not found for all MOC events export..");
+		return null;
+	}
+		
 
 }
