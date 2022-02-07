@@ -154,7 +154,7 @@ public class EventControllers {
 		Page<Event> events = new PageImpl<Event>(eventList, pageable, eventPresenters.getTotalElements());
 		return events;	
 	}
-	
+			
 	@GetMapping("/sorted-filtered-myevents/{pageNumber}/{pageElements}/{fieldName}/{sortOrder}/{from}/{to}/{onlyUpcoming}")
 	Page<Event> getMySortedFilteredEvents(@AuthenticationPrincipal Presenter user, @PathVariable Integer pageNumber, 
 			@PathVariable Integer pageElements, @PathVariable String fieldName, @PathVariable String sortOrder, 
