@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.rtachicago</groupId>
 	<artifactId>mobility-mgmt-crm</artifactId>
-	<version>2.0</version>
+	<version>2.2</version>
 	<name>MMOUTREACH API</name>
 	<description>Mobility Management Outreach API </description>
 
@@ -104,7 +104,7 @@
 	</dependencies>
 	
 	<build>
-	<finalName>mm-outreach-service-2.0</finalName>
+	<finalName>mm-outreach-service-2.2</finalName>
 		<plugins>
     		<plugin>
 				<configuration>
